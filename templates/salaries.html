@@ -36,7 +36,6 @@
             background: rgba(255, 255, 255, 0.95); color: #000; font-size: 12px; font-weight: 600;
         }
 
-        /* تنسيق الأزرار الرئيسي */
         .btn { 
             background: #27ae60; color: white; border: none; padding: 7px 12px; border-radius: 5px; 
             cursor: pointer; font-weight: 700; font-size: 12px; width: 100%; transition: 0.3s;
@@ -46,19 +45,20 @@
         .btn-blue { background: #2980b9; }
         .btn-blue:hover { background: #2471a3; }
 
-        /* الأزرار الصغرية والمتناسقة للأيقونات */
         .icon-btn { 
-            background: #2980b9; color: white; border: none; width: 30px; height: 30px; border-radius: 5px; 
-            cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; 
+            background: #2980b9; color: white; border: none; width: 28px; height: 28px; border-radius: 4px; 
+            cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; 
             text-decoration: none; transition: 0.3s;
         }
         .icon-btn:hover { transform: scale(1.08); background: #1c5980; }
+        .icon-btn-edit { background: #f39c12; }
+        .icon-btn-edit:hover { background: #d68910; }
         .icon-btn-whatsapp { background: #25d366; }
         .icon-btn-whatsapp:hover { background: #1eb854; }
         .icon-btn-danger { background: #e74c3c; }
         .icon-btn-danger:hover { background: #c0392b; }
 
-        .table-responsive { width: 100%; overflow-x: auto; max-height: 200px; overflow-y: auto; }
+        .table-responsive { width: 100%; overflow-x: auto; max-height: 220px; overflow-y: auto; }
         table { width: 100%; border-collapse: collapse; text-align: center; }
         th, td { padding: 6px 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); font-size: 12px; }
         th { background: rgba(0, 0, 0, 0.5); color: #4facfe; position: sticky; top: 0; font-weight: 700; }
@@ -78,169 +78,108 @@
     <div class="header-bar">
         <div style="display: flex; align-items: center; gap: 10px;">
             <a href="{{ url_for('dashboard') }}" class="back-link"><i class="fa-solid fa-arrow-right"></i> الرئيسية</a>
-            <h2 style="margin: 0; font-size: 16px; font-weight: 800;"><i class="fa-solid fa-money-check-dollar"></i> إدارة الرواتب والخصومات</h2>
+            <h2 style="margin: 0; font-size: 16px; font-weight: 800;"><i class="fa-solid fa-money-check-dollar"></i> إدارة الرواتب والخصومات والمكافآت والسلف</h2>
         </div>
         <a href="{{ url_for('finance') }}" class="back-link">الخزينة ➔</a>
     </div>
 
-    <!-- صرف راتب -->
+    <!-- تسجيل راتب، مكافأة، سلفة أو خصم -->
     <div class="section-box">
-        <h3><i class="fa-solid fa-file-invoice-dollar"></i> صرف راتب وإصدار إيصال</h3>
+        <h3><i class="fa-solid fa-file-invoice-dollar"></i> تسجيل وإصدار مستحقات مالية جديدة</h3>
         <form method="POST">
-            <input type="hidden" name="action" value="pay_salary">
             <div class="form-grid">
                 <div class="form-group">
-                    <label>الموظف</label>
-                    <select name="emp_id" id="empSelect" required onchange="updateSalary(this)">
-                        <option value="">-- اختر الموظف --</option>
-                        {% for emp in employees %}
-                        <option value="{{ emp.id }}" data-salary="{{ emp.default_salary|int }}">{{ emp.name }}</option>
-                        {% endfor %}
+                    <label>اسم الموظف</label>
+                    <input name="employee_name" placeholder="اسم الموظف" required>
+                </div>
+                <div class="form-group">
+                    <label>الراتب الأساسي</label>
+                    <input name="basic_salary" type="number" step="0.01" value="0" required>
+                </div>
+                <div class="form-group">
+                    <label>الخصومات / الجزاءات</label>
+                    <input name="deductions" type="number" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label>المكافأة / الإضافي</label>
+                    <input name="bonuses" type="number" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label>السلفة</label>
+                    <input name="advance" type="number" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label>نوع إيصال المكافأة</label>
+                    <select name="bonus_receipt_type">
+                        <option value="separate">إيصال مكافأة مستقل</option>
+                        <option value="with_salary">مدمج مع إيصال الراتب</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>عن شهر</label>
-                    <select name="salary_month" required>
-                        <option value="10" selected>شهر 10</option>
-                        <option value="1">شهر 1</option><option value="2">شهر 2</option><option value="3">شهر 3</option>
-                        <option value="4">شهر 4</option><option value="5">شهر 5</option><option value="6">شهر 6</option>
-                        <option value="7">شهر 7</option><option value="8">شهر 8</option><option value="9">شهر 9</option>
-                        <option value="11">شهر 11</option><option value="12">شهر 12</option>
-                    </select>
+                    <label>الشهر / السنة</label>
+                    <input name="month_year" placeholder="مثال: 2026-11" required>
                 </div>
                 <div class="form-group">
-                    <label>المرتب الأساسي</label>
-                    <input type="number" name="amount" id="salaryInput" required placeholder="0">
-                </div>
-                <div class="form-group">
-                    <label>الحالة</label>
-                    <select name="status">
-                        <option value="منتظم" selected>منتظم</option>
-                        <option value="غياب">غياب</option>
-                        <option value="مريض">مريض</option>
-                        <option value="إجازة">إجازة</option>
-                        <option value="إذن مهم">إذن مهم</option>
-                        <option value="استقالة">استقالة</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>الخصم</label>
-                    <input type="number" name="deduction" value="0" placeholder="0">
-                </div>
-                <div class="form-group">
-                    <label>سبب الخصم</label>
-                    <input type="text" name="deduction_reason" placeholder="ملاحظة">
-                </div>
-                <div class="form-group">
-                    <label>التاريخ</label>
-                    <input type="date" name="pay_date" value="{{ today }}" required>
-                </div>
-                <div class="form-group">
-                    <button type="submit" class="btn"><i class="fa-solid fa-receipt"></i> صرف وإصدار</button>
+                    <button type="submit" class="btn"><i class="fa-solid fa-receipt"></i> حفظ ورصد</button>
                 </div>
             </div>
         </form>
     </div>
 
-    <!-- سجل الرواتب -->
+    <!-- سجل الرواتب والمستحقات -->
     <div class="section-box">
-        <h3><i class="fa-solid fa-clipboard-list"></i> سجل الرواتب المصروفة</h3>
+        <h3><i class="fa-solid fa-clipboard-list"></i> سجل الرواتب والمستحقات الحالية</h3>
         <div class="table-responsive">
             <table>
                 <thead>
                     <tr>
                         <th>م</th>
-                        <th>التاريخ</th>
-                        <th>الموظف</th>
-                        <th>الشهر</th>
-                        <th>الحالة</th>
-                        <th>الخصم</th>
+                        <th>اسم الموظف</th>
+                        <th>الأساسي</th>
+                        <th>الخصومات</th>
+                        <th>المكافآت</th>
+                        <th>السلفة</th>
                         <th>الصافي</th>
-                        <th>إجراء</th>
+                        <th>الشهر / السنة</th>
+                        <th>الإجراءات والطباعة</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for p in payments %}
-                    <tr>
-                        <td>{{ loop.index }}</td>
-                        <td>{{ p.pay_date }}</td>
-                        <td style="text-align: right; padding-right: 8px; font-weight: 700;">{{ p.employee_name }}</td>
-                        <td>شهر {{ p.month }}</td>
-                        <td>{{ p.status }}</td>
-                        <td style="color: #e74c3c;">{{ p.deduction|int }}</td>
-                        <td style="color: #2ecc71; font-weight: 700;">{{ p.amount|int }} د.ل</td>
-                        <td>
-                            <div style="display: flex; gap: 4px; justify-content: center;">
-                                <a href="https://api.whatsapp.com/send?text={{ ('السيد/ة المحترم/ة ' ~ p.employee_name ~ '، نود إعلامكم بأن راتب شهر ' ~ p.month ~ ' جاهز للاستلام في الشؤون المالية بالمركب الرياضي بالمرج.') | urlencode }}" 
-                                   class="icon-btn icon-btn-whatsapp" target="_blank" title="إرسال إشعار واتساب"><i class="fa-brands fa-whatsapp"></i></a>
-                                <a href="{{ url_for('print_salary_voucher', payment_id=p.id) }}" class="icon-btn" target="_blank" title="طباعة الإيصال"><i class="fa-solid fa-print"></i></a>
-                                <a href="{{ url_for('delete_salary_payment', id=p.id) }}" onclick="return confirm('هل أنت متأكد من الحذف؟')" class="icon-btn icon-btn-danger" title="حذف"><i class="fa-solid fa-trash"></i></a>
-                            </div>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr><td colspan="8" style="text-align:center; color: #a0aec0;">لا توجد سجلات مصروفة حتى الآن.</td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- إدارة الموظفين وتعديل الأسماء الأصلية وحذف -->
-    <div class="section-box">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <h3 style="margin: 0;"><i class="fa-solid fa-users-gear"></i> إدارة وتعديل الموظفين</h3>
-            <a href="{{ url_for('print_all_employees') }}" target="_blank" class="btn btn-blue" style="width: auto; padding: 4px 10px; font-size: 11px;"><i class="fa-solid fa-print"></i> طباعة كشف الموظفين (A4)</a>
-        </div>
-        
-        <form method="POST" style="margin-bottom: 10px; background: rgba(0,0,0,0.15); padding: 8px; border-radius: 5px;">
-            <input type="hidden" name="action" value="add_employee">
-            <div class="form-grid">
-                <div class="form-group"><label>اسم الموظف</label><input type="text" name="name" required placeholder="الاسم"></div>
-                <div class="form-group"><label>المرتب</label><input type="number" name="default_salary" required placeholder="0"></div>
-                <div class="form-group"><button type="submit" class="btn btn-blue">+ إضافة موظف</button></div>
-            </div>
-        </form>
-
-        <div class="table-responsive" style="max-height: 160px;">
-            <table>
-                <thead>
-                    <tr><th>م</th><th>تعديل اسم الموظف والراتب الأساسي</th><th>إجراء</th></tr>
-                </thead>
-                <tbody>
-                    {% for emp in employees %}
-                    <tr>
-                        <td>{{ loop.index }}</td>
-                        <td style="text-align: right; padding-right: 5px;">
-                            <form method="POST" id="emp_{{ emp.id }}" style="display: flex; gap: 5px; align-items: center;">
-                                <input type="hidden" name="action" value="update_employee">
-                                <input type="hidden" name="emp_id" value="{{ emp.id }}">
-                                <input type="text" name="name" value="{{ emp.name }}" style="padding: 4px 6px; width: 70%; background: #fff; color: #000; border-radius: 4px;" required>
-                                <input type="number" name="default_salary" value="{{ emp.default_salary|int }}" style="padding: 4px 6px; width: 25%; background: #fff; color: #000; border-radius: 4px; text-align: center;" required>
-                        </td>
-                        <td>
-                                <div style="display: flex; gap: 4px; justify-content: center;">
-                                    <button type="submit" class="icon-btn" title="حفظ"><i class="fa-solid fa-floppy-disk"></i></button>
-                            </form>
-                                <form method="POST" style="display:inline;" onsubmit="return confirm('حذف الموظف؟')">
-                                    <input type="hidden" name="action" value="delete_employee">
-                                    <input type="hidden" name="emp_id" value="{{ emp.id }}">
-                                    <button type="submit" class="icon-btn icon-btn-danger" title="حذف"><i class="fa-solid fa-trash"></i></button>
-                                </form>
+                    {% if salaries and salaries|length > 0 %}
+                        {% for sal in salaries %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td style="text-align: right; padding-right: 8px; font-weight: 700; color: #4facfe;">{{ sal.employee_name }}</td>
+                            <td>{{ sal.basic_salary|int }} د.ل</td>
+                            <td style="color: {% if sal.deductions > 0 %}#e74c3c{% else %}#a0aec0{% endif %};">
+                                {% if sal.deductions > 0 %}- {{ sal.deductions|int }} د.ل{% else %}لا توجد{% endif %}
+                            </td>
+                            <td style="color: #2ecc71;">+ {{ sal.bonuses|int }} د.ل</td>
+                            <td style="color: #f39c12;">{{ sal.advance|int }} د.ل</td>
+                            <td style="font-weight: 800; color: #f1c40f;">{{ (sal.basic_salary - sal.deductions + sal.bonuses - sal.advance)|int }} د.ل</td>
+                            <td>{{ sal.month_year }}</td>
+                            <td>
+                                <div style="display: flex; gap: 3px; justify-content: center; flex-wrap: wrap;">
+                                    <a href="{{ url_for('print_salary_receipt', id=sal.id) }}" class="icon-btn" target="_blank" title="إيصال الراتب"><i class="fa-solid fa-print"></i></a>
+                                    {% if sal.bonuses > 0 and sal.bonus_receipt_type == 'separate' %}
+                                    <a href="{{ url_for('print_bonus_receipt', id=sal.id) }}" class="icon-btn" style="background: #27ae60;" target="_blank" title="إيصال مكافأة"><i class="fa-solid fa-award"></i></a>
+                                    {% endif %}
+                                    {% if sal.advance > 0 %}
+                                    <a href="{{ url_for('print_advance_receipt', id=sal.id) }}" class="icon-btn" style="background: #e67e22;" target="_blank" title="إيصال سلفة"><i class="fa-solid fa-file-invoice-dollar"></i></a>
+                                    {% endif %}
+                                    <a href="{{ url_for('edit_salary', id=sal.id) }}" class="icon-btn icon-btn-edit" title="تعديل"><i class="fa-solid fa-pen"></i></a>
+                                    <a href="{{ url_for('delete_salary', id=sal.id) }}" onclick="return confirm('هل أنت متأكد من الحذف؟')" class="icon-btn icon-btn-danger" title="حذف"><i class="fa-solid fa-trash"></i></a>
                                 </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr><td colspan="9" style="text-align:center; color: #a0aec0; padding: 15px;">لا توجد سجلات مسجلة حالياً</td></tr>
+                    {% endif %}
                 </tbody>
             </table>
         </div>
     </div>
 
-    <script>
-        function updateSalary(select) {
-            let salary = select.options[select.selectedIndex].getAttribute('data-salary');
-            document.getElementById('salaryInput').value = salary ? salary : '';
-        }
-    </script>
 </body>
 </html>
