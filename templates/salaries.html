@@ -14,49 +14,36 @@
         .form-group label { display: block; font-size: 12px; margin-bottom: 4px; color: #cbd5e1; font-weight: bold; }
         .form-group input, .form-group select { width: 100%; padding: 6px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 12px; color: #000; box-sizing: border-box; }
         
-        /* تنسيق خط محرك البحث Select2 */
         .select2-container { width: 100% !important; }
         .select2-container .select2-selection--single { height: 30px !important; background: #f8fafc !important; border: 1px solid #cbd5e1 !important; border-radius: 4px !important; }
         .select2-container--default .select2-selection--single .select2-selection__rendered { line-height: 28px !important; color: #000 !important; font-family: 'Traditional Arabic', 'Tahoma', sans-serif !important; font-size: 13px !important; font-weight: bold !important; }
-        .select2-results__option { font-family: 'Traditional Arabic', 'Tahoma', sans-serif !important; color: #000 !important; font-size: 12px !important; }
 
         .btn-action { background: #10b981; color: white; border: none; padding: 7px 12px; font-size: 12px; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; }
         .btn-action:hover { background: #059669; }
 
         .btn-excel { background: #047857; color: white; border: none; padding: 6px 12px; font-size: 12px; font-weight: bold; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; }
-        .btn-excel:hover { background: #065f46; }
-
         .btn-print { background: #2563eb; color: white; border: none; padding: 6px 12px; font-size: 12px; font-weight: bold; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; margin-right: 5px; }
-        .btn-print:hover { background: #1d4ed8; }
+        
+        .btn-letter { background: #d97706; color: white; padding: 3px 8px; border-radius: 3px; font-size: 11px; text-decoration: none; display: inline-block; margin-left: 2px; }
+        .btn-edit { background: #0284c7; color: white; border: none; padding: 3px 8px; border-radius: 3px; font-size: 11px; cursor: pointer; margin-left: 2px; }
+        .btn-delete { background: #ef4444; color: white; border: none; padding: 3px 8px; border-radius: 3px; font-size: 11px; cursor: pointer; }
 
-        .btn-letter { background: #d97706; color: white; border: none; padding: 3px 8px; border-radius: 3px; cursor: pointer; font-size: 11px; margin-left: 2px; }
-        .btn-letter:hover { background: #b45309; }
-
-        .btn-edit { background: #0284c7; color: white; border: none; padding: 3px 8px; border-radius: 3px; cursor: pointer; font-size: 11px; margin-left: 2px; }
-        .btn-edit:hover { background: #0369a1; }
-
-        .btn-delete { background: #ef4444; color: white; border: none; padding: 3px 8px; border-radius: 3px; cursor: pointer; font-size: 11px; }
-        .btn-delete:hover { background: #dc2626; }
-
-        /* حاوية الجدول المدمجة */
         .table-container { max-height: 220px; overflow-y: auto; margin-top: 8px; border: 1px solid #334155; border-radius: 4px; }
         .table-custom { width: 100%; border-collapse: collapse; font-size: 12px; background: #1e293b; }
         .table-custom th, .table-custom td { border: 1px solid #334155; padding: 6px; text-align: center; }
         .table-custom th { background: #0ea5e9; color: #fff; position: sticky; top: 0; z-index: 1; }
 
-        /* تنسيق رسائل التنبيه الفورية */
         .alert { padding: 8px 12px; margin-bottom: 12px; border-radius: 4px; font-size: 12px; font-weight: bold; }
-        .alert-success { background: #065f46; color: #d1fae5; border: 1px solid #047857; }
-        .alert-danger { background: #991b1b; color: #fee2e2; border: 1px solid #7f1d1d; }
+        .alert-success { background: #065f46; color: #d1fae5; }
+        .alert-danger { background: #991b1b; color: #fee2e2; }
 
-        /* تنسيق صفحة الطباعة */
         @media print {
             body { background: #fff !important; color: #000 !important; padding: 0 !important; }
             .panel-box:not(#printSection), .alert, form, .btn-excel, .btn-print, .btn-letter, .btn-edit, .btn-delete, header { display: none !important; }
             #printSection { display: block !important; background: #fff !important; border: none !important; box-shadow: none !important; padding: 0 !important; }
             .table-container { max-height: none !important; overflow: visible !important; border: none !important; }
             .table-custom { background: #fff !important; color: #000 !important; }
-            .table-custom th { background: #e2e8f0 !important; color: #000 !important; position: static !important; border: 1px solid #000 !important; }
+            .table-custom th { background: #e2e8f0 !important; color: #000 !important; border: 1px solid #000 !important; }
             .table-custom td { border: 1px solid #000 !important; color: #000 !important; }
         }
         #printSection { display: none; }
@@ -78,27 +65,22 @@
                         {% endfor %}
                     </select>
                 </div>
-
                 <div class="form-group">
                     <label>الراتب الأساسي</label>
                     <input type="number" id="basicSalary" name="basic_salary" value="0" readonly>
                 </div>
-
                 <div class="form-group">
                     <label>الخصومات / الجزاءات</label>
                     <input type="number" name="deductions" value="0" step="1">
                 </div>
-
                 <div class="form-group">
                     <label>المكافأة / الإضافي</label>
                     <input type="number" name="bonuses" value="0" step="1">
                 </div>
-
                 <div class="form-group">
                     <label>السلفة</label>
                     <input type="number" name="advance" value="0" step="1">
                 </div>
-
                 <div class="form-group">
                     <label>نوع الإيصال</label>
                     <select name="bonus_receipt_type">
@@ -107,12 +89,10 @@
                         <option value="advance">إيصال سلفة</option>
                     </select>
                 </div>
-
                 <div class="form-group">
                     <label>التاريخ (يوم / شهر / سنة)</label>
                     <input type="date" id="salaryFullDate" name="month_year" required>
                 </div>
-
                 <div class="form-group">
                     <button type="submit" class="btn-action">💾 حفظ ورصد</button>
                 </div>
@@ -120,7 +100,7 @@
         </form>
     </div>
 
-    <!-- فورم شركة أكيپ لإضافة عامل/موظف جديد مع رسائل التنبيه الفورية -->
+    <!-- فورم إضافة عامل أو موظف جديد -->
     <div class="panel-box">
         <div class="panel-title">🏢 شركة أكيپ للإنشاءات - نموذج إضافة عامل أو موظف جديد</div>
         
@@ -150,13 +130,13 @@
         </form>
     </div>
 
-    <!-- قسم إدارة الموظفين والرواتب الأساسية -->
+    <!-- جدول عرض الموظفين والعمال -->
     <div class="panel-box">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <div class="panel-title" style="border: none; margin: 0;">👥 كشف الموظفين والرواتب الأساسية</div>
             <div>
                 <button onclick="exportToExcel()" class="btn-excel">📊 تصدير Excel</button>
-                <button onclick="printEmployeeList()" class="btn-print">🖨️ طباعة الكشف بشعار الشركة</button>
+                <button onclick="window.print()" class="btn-print">🖨️ طباعة الكشف</button>
             </div>
         </div>
 
@@ -177,17 +157,16 @@
                         <td>{{ emp.name }}</td>
                         <td>{{ "%.0f"|format(emp.default_salary) }} د.ل</td>
                         <td>
-                            <!-- زر طباعة رسالة مباشرة العمل -->
-                            <button type="button" class="btn-letter" onclick="printWorkLetter(this)" data-name="{{ emp.name }}" data-salary="{{ "%.0f"|format(emp.default_salary) }}">📄 مباشرة</button>
+                            <!-- زر مباشرة عمل يفتح في تبويب مستقل بمسار واضح -->
+                            <a href="/salaries/print/work_letter/{{ emp.id }}" target="_blank" class="btn-letter">📄 مباشرة</a>
                             
-                            <!-- زر التعديل -->
+                            <!-- زر تعديل يفتح النافذة المنبثقة -->
                             <button type="button" class="btn-edit" onclick="openEditModal('{{ emp.id }}', '{{ emp.name }}', '{{ "%.0f"|format(emp.default_salary) }}')">✏️ تعديل</button>
                             
-                            <!-- زر الحذف -->
-                            <form action="/salaries" method="POST" style="display:inline;">
-                                <input type="hidden" name="action" value="delete_employee">
+                            <!-- زر حذف مباشر ومضمون عبر فورم -->
+                            <form action="/salaries/delete" method="POST" style="display:inline;">
                                 <input type="hidden" name="emp_id" value="{{ emp.id }}">
-                                <button type="submit" class="btn-delete" onclick="return confirm('هل أنت متأكد من حذف هذا العامل؟')">حذف</button>
+                                <button type="submit" class="btn-delete" onclick="return confirm('هل أنت متأكد من الحذف؟')">حذف</button>
                             </form>
                         </td>
                     </tr>
@@ -201,8 +180,7 @@
     <div id="editModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; justify-content:center; align-items:center;">
         <div style="background:#1e293b; padding:20px; border-radius:8px; width:400px; border:1px solid #334155;">
             <div style="font-size:15px; font-weight:bold; color:#38bdf8; margin-bottom:15px; border-bottom:1px solid #334155; padding-bottom:8px;">✏️ تعديل بيانات الموظف</div>
-            <form action="/salaries" method="POST">
-                <input type="hidden" name="action" value="update_employee">
+            <form action="/salaries/update" method="POST">
                 <input type="hidden" name="emp_id" id="edit_emp_id">
                 
                 <div style="margin-bottom:10px;">
@@ -223,25 +201,21 @@
         </div>
     </div>
 
-    <!-- نموذج الطباعة الخاص بشعار الشركة (للكشف العام) -->
+    <!-- نموذج الطباعة العام للشعار -->
     <div id="printSection" class="panel-box">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px;">
-            <div style="text-align: right;">
+            <div>
                 <h3 style="margin: 0; font-size: 16px;">شركة أكيپ للإنشاءات</h3>
                 <p style="margin: 2px 0; font-size: 12px;">كشف العمال والموظفين المعتمد</p>
             </div>
-            <div>
-                <img src="/static/logo.png" alt="شعار الشركة" style="max-height: 50px;" onerror="this.style.display='none'">
-            </div>
-            <div style="text-align: left; font-size: 12px;">
-                تاريخ الطباعة: <span id="printDate"></span>
-            </div>
+            <div><img src="/static/logo.png" style="max-height: 50px;" onerror="this.style.display='none'"></div>
+            <div style="font-size: 12px;">التاريخ: <span id="printDate"></span></div>
         </div>
         <h4 style="text-align: center; margin: 10px 0; font-size: 14px;">كشف أسماء العمال والرواتب الأساسية</h4>
-        <table class="table-custom" id="printTable" style="width: 100%; border-collapse: collapse;">
+        <table class="table-custom" style="width: 100%; border-collapse: collapse;">
             <thead>
                 <tr>
-                    <th style="width: 50px; border: 1px solid #000; padding: 5px;">م</th>
+                    <th style="border: 1px solid #000; padding: 5px;">م</th>
                     <th style="border: 1px solid #000; padding: 5px;">اسم العامل / الموظف</th>
                     <th style="border: 1px solid #000; padding: 5px;">الراتب الأساسي</th>
                 </tr>
@@ -249,108 +223,33 @@
             <tbody>
                 {% for emp in employees %}
                 <tr>
-                    <td style="border: 1px solid #000; padding: 5px; text-align: center;">{{ loop.index }}</td>
+                    <td style="border: 1px solid #000; padding: 5px;">{{ loop.index }}</td>
                     <td style="border: 1px solid #000; padding: 5px; text-align: right;">{{ emp.name }}</td>
-                    <td style="border: 1px solid #000; padding: 5px; text-align: center;">{{ "%.0f"|format(emp.default_salary) }} د.ل</td>
+                    <td style="border: 1px solid #000; padding: 5px;">{{ "%.0f"|format(emp.default_salary) }} د.ل</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 
-    <!-- مكتبات وسكربتات التشغيل والتنسيق -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
     <script>
         $(document).ready(function() {
-            $('#employeeSelect').select2({
-                placeholder: "-- ابحث عن اسم العامل --",
-                allowClear: true
-            });
-
+            $('#employeeSelect').select2({ placeholder: "-- ابحث عن اسم العامل --", allowClear: true });
             $('#employeeSelect').on('change select2:select', function() {
-                var selectedOption = $(this).find(':selected');
-                var basicSalary = selectedOption.attr('data-basic') || 0;
-                $('#basicSalary').val(basicSalary);
+                $('#basicSalary').val($(this).find(':selected').attr('data-basic') || 0);
             });
-
             const today = new Date().toISOString().split('T')[0];
             $('#salaryFullDate').val(today);
             $('#printDate').text(today);
         });
 
         function exportToExcel() {
-            var table = document.getElementById("employeesTable");
-            var wb = XLSX.utils.table_to_book(table, {sheet: "كشف الموظفين"});
-            XLSX.writeFile(wb, "كشف_الموظفين_والرواتب.xlsx");
-        }
-
-        function printEmployeeList() {
-            window.print();
-        }
-
-        // دالة طباعة مباشرة العمل
-        function printWorkLetter(btn) {
-            var empName = btn.getAttribute('data-name');
-            var empSalary = btn.getAttribute('data-salary');
-            
-            var printWindow = window.open('', '_blank', 'width=800,height=600');
-            printWindow.document.write(`
-                <html lang="ar" dir="rtl">
-                <head>
-                    <meta charset="UTF-8">
-                    <title>إفادة مباشرة عمل - ${empName}</title>
-                    <style>
-                        body { font-family: 'Traditional Arabic', 'Tahoma', sans-serif; padding: 30px; color: #000; direction: rtl; line-height: 1.8; }
-                        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 15px; margin-bottom: 30px; }
-                        .title { text-align: center; font-size: 20px; font-weight: bold; margin: 30px 0; text-decoration: underline; }
-                        .content { font-size: 16px; margin-bottom: 40px; text-align: justify; }
-                        .footer { display: flex; justify-content: space-between; margin-top: 80px; font-size: 15px; font-weight: bold; }
-                    </style>
-                </head>
-                <body>
-                    <div class="header">
-                        <div style="text-align: right;">
-                            <h2 style="margin: 0; font-size: 18px;">شركة أكيپ للإنشاءات</h2>
-                            <p style="margin: 3px 0; font-size: 13px;">الشؤون الإدارية والموارد البشرية</p>
-                        </div>
-                        <div>
-                            <img src="/static/logo.png" alt="شعار الشركة" style="max-height: 60px;" onerror="this.style.display='none'">
-                        </div>
-                        <div style="text-align: left; font-size: 13px;">
-                            التاريخ: ${new Date().toISOString().split('T')[0]}
-                        </div>
-                    </div>
-
-                    <div class="title">إفادة مباشرة عمل</div>
-
-                    <div class="content">
-                        تشهد إدارة شركة أكيپ للإنشاءات بأن السيد / <b>${empName}</b> قد باشر مهام عمله الفعلي بالشركة بوظيفته، وتقرر منحـه راتباً أساسياً شهرياً وقدره <b>${empSalary} دينار ليبي</b> لا غير.<br><br>
-                        وقد أعطيت له هذه الإفادة بناءً على طلبه ودون أدنى مسؤولية على الشركة تجاه حقوق الغير المالية خارج نطاق العمل الرسمي.
-                    </div>
-
-                    <div class="footer">
-                        <div>
-                            <p>مسؤول الشؤون الإدارية:</p>
-                            <br><br>
-                            <p>التوقيع: ..........................</p>
-                        </div>
-                        <div style="text-align: left;">
-                            <p>ختم الشركة:</p>
-                            <br><br>
-                            <p>..........................</p>
-                        </div>
-                    </div>
-
-                    <script>
-                        window.onload = function() { window.print(); };
-                    </script>
-                </body>
-                </html>
-            `);
-            printWindow.document.close();
+            var wb = XLSX.utils.table_to_book(document.getElementById("employeesTable"), {sheet: "كشف الموظفين"});
+            XLSX.writeFile(wb, "كشف_الموظفين.xlsx");
         }
 
         // دوال نافذة التعديل السريع
@@ -365,6 +264,5 @@
             $('#editModal').css('display', 'none');
         }
     </script>
-
 </body>
 </html>
