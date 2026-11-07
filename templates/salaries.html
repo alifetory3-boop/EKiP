@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>إدارة الرواتب - المركب الرياضي بالمرج</title>
+    <title>إدارة الرواتب والموظفين - المركب الرياضي بالمرج</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -53,8 +53,6 @@
         .icon-btn:hover { transform: scale(1.08); background: #1c5980; }
         .icon-btn-edit { background: #f39c12; }
         .icon-btn-edit:hover { background: #d68910; }
-        .icon-btn-whatsapp { background: #25d366; }
-        .icon-btn-whatsapp:hover { background: #1eb854; }
         .icon-btn-danger { background: #e74c3c; }
         .icon-btn-danger:hover { background: #c0392b; }
 
@@ -78,23 +76,34 @@
     <div class="header-bar">
         <div style="display: flex; align-items: center; gap: 10px;">
             <a href="{{ url_for('dashboard') }}" class="back-link"><i class="fa-solid fa-arrow-right"></i> الرئيسية</a>
-            <h2 style="margin: 0; font-size: 16px; font-weight: 800;"><i class="fa-solid fa-money-check-dollar"></i> إدارة الرواتب والخصومات والمكافآت والسلف</h2>
+            <h2 style="margin: 0; font-size: 16px; font-weight: 800;"><i class="fa-solid fa-money-check-dollar"></i> إدارة الرواتب والموظفين</h2>
         </div>
         <a href="{{ url_for('finance') }}" class="back-link">الخزينة ➔</a>
     </div>
 
-    <!-- تسجيل راتب، مكافأة، سلفة أو خصم -->
+    <!-- تسجيل مستحقات جديدة واختيار الموظف من القائمة -->
     <div class="section-box">
-        <h3><i class="fa-solid fa-file-invoice-dollar"></i> تسجيل وإصدار مستحقات مالية جديدة</h3>
+        <h3><i class="fa-solid fa-file-invoice-dollar"></i> رصد وصرف راتب ومستحقات</h3>
         <form method="POST">
             <div class="form-grid">
                 <div class="form-group">
-                    <label>اسم الموظف</label>
-                    <input name="employee_name" placeholder="اسم الموظف" required>
+                    <label>اختر الموظف (قائمة سريعة)</label>
+                    <select id="empSelect" onchange="fillEmployeeData(this)">
+                        <option value="">-- اختر الموظف --</option>
+                        {% if employees %}
+                            {% for emp in employees %}
+                            <option value="{{ emp.name }}" data-salary="{{ emp.default_salary }}">{{ emp.name }} ({{ emp.default_salary }} د.ل)</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>اسم الموظف المسجل</label>
+                    <input name="employee_name" id="empNameInput" placeholder="أدخل اسم الموظف" required>
                 </div>
                 <div class="form-group">
                     <label>الراتب الأساسي</label>
-                    <input name="basic_salary" type="number" step="0.01" value="0" required>
+                    <input name="basic_salary" id="basicSalaryInput" type="number" step="0.01" value="0" required>
                 </div>
                 <div class="form-group">
                     <label>الخصومات / الجزاءات</label>
@@ -117,7 +126,7 @@
                 </div>
                 <div class="form-group">
                     <label>الشهر / السنة</label>
-                    <input name="month_year" placeholder="مثال: 2026-11" required>
+                    <input name="month_year" value="2026-11" required>
                 </div>
                 <div class="form-group">
                     <button type="submit" class="btn"><i class="fa-solid fa-receipt"></i> حفظ ورصد</button>
@@ -126,9 +135,9 @@
         </form>
     </div>
 
-    <!-- سجل الرواتب والمستحقات -->
+    <!-- سجل الرواتب والمستحقات المصروفة -->
     <div class="section-box">
-        <h3><i class="fa-solid fa-clipboard-list"></i> سجل الرواتب والمستحقات الحالية</h3>
+        <h3><i class="fa-solid fa-clipboard-list"></i> سجل الرواتب والمستحقات المصروفة</h3>
         <div class="table-responsive">
             <table>
                 <thead>
@@ -181,5 +190,70 @@
         </div>
     </div>
 
+    <!-- إدارة قائمة الموظفين (إضافة، تعديل، حذف) -->
+    <div class="section-box">
+        <h3><i class="fa-solid fa-users-gear"></i> إدارة الموظفين والرواتب الأساسية</h3>
+        
+        <form method="POST" style="margin-bottom: 10px; background: rgba(0,0,0,0.15); padding: 8px; border-radius: 5px;">
+            <input type="hidden" name="action" value="add_employee">
+            <div class="form-grid">
+                <div class="form-group"><label>اسم الموظف الجديد</label><input type="text" name="name" required placeholder="الاسم الكامل"></div>
+                <div class="form-group"><label>المرتب الأساسي</label><input type="number" step="0.01" name="default_salary" required placeholder="0"></div>
+                <div class="form-group"><button type="submit" class="btn btn-blue">+ إضافة موظف جديد</button></div>
+            </div>
+        </form>
+
+        <div class="table-responsive" style="max-height: 180px;">
+            <table>
+                <thead>
+                    <tr><th>م</th><th>اسم الموظف والراتب الأساسي</th><th>الإجراء</th></tr>
+                </thead>
+                <tbody>
+                    {% if employees and employees|length > 0 %}
+                        {% for emp in employees %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td style="text-align: right; padding-right: 5px;">
+                                <form method="POST" style="display: flex; gap: 5px; align-items: center;">
+                                    <input type="hidden" name="action" value="update_employee">
+                                    <input type="hidden" name="emp_id" value="{{ emp.id }}">
+                                    <input type="text" name="name" value="{{ emp.name }}" style="padding: 4px 6px; width: 65%; background: #fff; color: #000; border-radius: 4px;" required>
+                                    <input type="number" step="0.01" name="default_salary" value="{{ emp.default_salary }}" style="padding: 4px 6px; width: 30%; background: #fff; color: #000; border-radius: 4px; text-align: center;" required>
+                            </td>
+                            <td>
+                                    <div style="display: flex; gap: 4px; justify-content: center;">
+                                        <button type="submit" class="icon-btn" title="حفظ التعديل"><i class="fa-solid fa-floppy-disk"></i></button>
+                                </form>
+                                    <form method="POST" style="display:inline;" onsubmit="return confirm('هل تريد حذف هذا الموظف؟')">
+                                        <input type="hidden" name="action" value="update_employee">
+                                        <input type="hidden" name="emp_id" value="{{ emp.id }}">
+                                        <input type="hidden" name="name" value="{{ emp.name }}">
+                                        <input type="hidden" name="default_salary" value="{{ emp.default_salary }}">
+                                    </form>
+                                    <form method="POST" style="display:inline;" onsubmit="return confirm('هل تريد حذف هذا الموظف نهائياً؟')">
+                                        <input type="hidden" name="action" value="delete_employee">
+                                        <input type="hidden" name="emp_id" value="{{ emp.id }}">
+                                        <button type="submit" class="icon-btn icon-btn-danger" title="حذف الموظف"><i class="fa-solid fa-trash"></i></button>
+                                    </form>
+                                    </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr><td colspan="3" style="text-align:center; color: #a0aec0; padding: 10px;">لا توجد أسماء موظفين مسجلة حالياً</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        function fillEmployeeData(select) {
+            let name = select.value;
+            let salary = select.options[select.selectedIndex].getAttribute('data-salary');
+            document.getElementById('empNameInput').value = name;
+            document.getElementById('basicSalaryInput').value = salary ? salary : 0;
+        }
+    </script>
 </body>
 </html>
