@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>إفادة مباشرة عمل - {{ emp.name }}</title>
+    <style>
+        body { font-family: 'Traditional Arabic', 'Tahoma', sans-serif; padding: 40px; color: #000; direction: rtl; line-height: 2; background: #fff; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 15px; margin-bottom: 40px; }
+        .title { text-align: center; font-size: 22px; font-weight: bold; margin: 40px 0; text-decoration: underline; }
+        .content { font-size: 16px; margin-bottom: 50px; text-align: justify; }
+        .footer { display: flex; justify-content: space-between; margin-top: 100px; font-size: 16px; font-weight: bold; }
+        @media print { body { padding: 0; } }
+    </style>
+</head>
+<body onload="window.print()">
+    <div class="header">
+        <div style="text-align: right;">
+            <h2 style="margin: 0; font-size: 18px;">شركة أكيپ للإنشاءات</h2>
+            <p style="margin: 3px 0; font-size: 13px;">الشؤون الإدارية والموارد البشرية</p>
+        </div>
+        <div>
+            <img src="/static/logo.png" alt="شعار الشركة" style="max-height: 60px;" onerror="this.style.display='none'">
+        </div>
+        <div style="text-align: left; font-size: 13px;">
+            التاريخ: {{ now.strftime('%Y-%m-%d') }}
+        </div>
+    </div>
+
+    <div class="title">إفادة مباشرة عمل</div>
+
+    <div class="content">
+        تشهد إدارة شركة أكيپ للإنشاءات بأن السيد / <b>{{ emp.name }}</b> قد باشر مهام عمله الفعلي بالشركة بوظيفته، وتقرر منحـه راتباً أساسياً شهرياً وقدره <b>{{ "%.0f"|format(emp.default_salary) }} دينار ليبي</b> لا غير.<br><br>
+        وقد أعطيت له هذه الإفادة بناءً على طلبه ودون أدنى مسؤولية على الشركة تجاه حقوق الغير المالية خارج نطاق العمل الرسمي.
+    </div>
+
+    <div class="footer">
+        <div>
+            <p>مسؤول الشؤون الإدارية:</p>
+            <br><br>
+            <p>التوقيع: ..........................</p>
+        </div>
+        <div style="text-align: left;">
+            <p>ختم الشركة:</p>
+            <br><br>
+            <p>..........................</p>
+        </div>
+    </div>
+</body>
+</html>
