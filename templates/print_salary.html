@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <title>إيصال راتب - شركة أكيپ للإنشاءات</title>
+    <!-- مكتبة Select2 للبحث في القائمة المنسدلة -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <style>
         @page { size: A5; margin: 8mm; }
         body { font-family: 'Traditional Arabic', 'Tahoma', sans-serif; background: #fff; color: #000; margin: 0; padding: 5px; direction: rtl; }
         .voucher-container { border: 2px solid #000; padding: 12px; border-radius: 6px; max-width: 100%; background: #fff; }
         
-        /* ترويسة الشركة مع الشعار فقط */
         .letterhead { display: flex; justify-content: center; align-items: center; border-bottom: 2px solid #000; padding-bottom: 6px; margin-bottom: 10px; }
         .letterhead img { height: 42px; width: auto; }
 
@@ -18,18 +19,22 @@
         .details-table th, .details-table td { border: 1px solid #000; padding: 6px 8px; text-align: right; }
         .details-table th { background: #f2f2f2; width: 30%; text-align: center; }
 
+        /* تنسيق حقول الاختيار والبحث */
+        .select2-container { width: 100% !important; }
+        .form-control-date { width: 100%; padding: 4px; font-size: 11px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+
         .signatures { display: flex; justify-content: space-between; margin-top: 25px; text-align: center; font-size: 11px; }
         .sig-box { width: 40%; border-top: 1px solid #000; padding-top: 5px; }
         
         .print-btn { text-align: center; margin-top: 15px; }
         .print-btn button { background: #2980b9; color: white; border: none; padding: 6px 15px; font-size: 12px; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        @media print { .print-btn { display: none; } body { padding: 0; } .voucher-container { border: none; } }
+        @media print { .print-btn, .select2 { display: none; } body { padding: 0; } .voucher-container { border: none; } }
     </style>
 </head>
 <body>
 
     <div class="voucher-container">
-        <!-- ترويسة الشركة بالشعار فقط بدون الجهاز الوطني للتنمية -->
+        <!-- ترويسة الشركة بالشعار فقط -->
         <div class="letterhead">
             <img src="{{ url_for('static', filename='logo.png.jpeg') }}" alt="شعار شركة أكيپ للإنشاءات">
         </div>
@@ -38,39 +43,32 @@
 
         <table class="details-table">
             <tr>
-                <th>اسم الموظف</th>
-                <td><b>{{ salary.employee_name }}</b></td>
+                <th>اختر الموظف (بحث)</th>
+                <td>
+                    <!-- قائمة منسدلة مع إمكانية البحث للأسماء -->
+                    <select id="employeeSelect" class="form-control" name="employee_id">
+                        <option value="">-- ابحث أو اختر اسم الموظف --</option>
+                        {% for emp in employees %}
+                        <option value="{{ emp.id }}">{{ emp.name }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
             </tr>
             <tr>
-                <th>الشهر / السنة</th>
-                <td>{{ salary.month_year }}</td>
+                <th>الشهر والسنة</th>
+                <td>
+                    <!-- خانة لاختيار الشهر والسنة الحالية أو المحددة -->
+                    <input type="month" id="salaryMonth" name="salary_month" class="form-control-date" value="">
+                </td>
             </tr>
             <tr>
                 <th>الراتب الأساسي</th>
-                <td>{{ salary.basic_salary|int }} د.ل</td>
+                <td><span id="basicSalaryDisplay">0</span> د.ل</td>
             </tr>
-            {% if salary.deductions > 0 %}
-            <tr>
-                <th>الخصومات والجزاءات</th>
-                <td style="color: #c0392b;">- {{ salary.deductions|int }} د.ل</td>
-            </tr>
-            {% endif %}
-            {% if salary.bonuses > 0 %}
-            <tr>
-                <th>المكافآت / الإضافي</th>
-                <td style="color: #27ae60;">+ {{ salary.bonuses|int }} د.ل</td>
-            </tr>
-            {% endif %}
-            {% if salary.advance > 0 %}
-            <tr>
-                <th>السلفة المسحوبة</th>
-                <td style="color: #d35400;">{{ salary.advance|int }} د.ل</td>
-            </tr>
-            {% endif %}
             <tr>
                 <th>الصافي المستحق</th>
                 <td style="font-weight: bold; font-size: 12px; color: #2980b9;">
-                    {{ (salary.basic_salary - salary.deductions + salary.bonuses - salary.advance)|int }} د.ل
+                    <span id="netSalaryDisplay">0</span> د.ل
                 </td>
             </tr>
         </table>
@@ -92,6 +90,25 @@
     <div class="print-btn">
         <button onclick="window.print()">طباعة الإيصال (A5)</button>
     </div>
+
+    <!-- سكربت تفعيل خاصية البحث (Select2) وتحديد الشهر الحالي تلقائياً -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // تفعيل البحث للقائمة المنسدلة
+            $('#employeeSelect').select2({
+                placeholder: "ابحث عن اسم الموظف...",
+                allowClear: true
+            });
+
+            // وضع الشهر والسنة الحالية تلقائياً في خانة التاريخ
+            const date = new Date();
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            $('#salaryMonth').val(`${year}-${month}`);
+        });
+    </script>
 
 </body>
 </html>
