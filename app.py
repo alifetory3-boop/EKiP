@@ -163,11 +163,11 @@ def users_management():
     conn.close()
     return render_template('users.html', users=users_list, logs=logs)
 
-# ==================== قسم إدارة الرواتب والخصومات والمكافآت والسلف الجديد ====================
+# ==================== قسم إدارة الرواتب والخصومات والمكافآت والسلف (محدث) ====================
 
 @app.route('/salaries', methods=['GET', 'POST'])
 @login_required(roles=['accountant'])
-def salaries_management():
+def salaries():
     conn = get_db()
     if request.method == 'POST':
         try:
@@ -185,11 +185,11 @@ def salaries_management():
             )
             conn.commit()
             log_activity("رصد راتب ومستحقات", f"تم تسجيل مستحقات الموظف: {employee_name} عن شهر {month_year}")
-            flash("تم حفظ وحفظ السجل بنجاح", "success")
+            flash("تم حفظ السجل بنجاح", "success")
         except Exception as e:
             flash(f"حدث خطأ: {e}", "danger")
         conn.close()
-        return redirect(url_for('salaries_management'))
+        return redirect(url_for('salaries'))
     
     salaries = conn.execute("SELECT * FROM advanced_salaries ORDER BY id DESC").fetchall()
     conn.close()
@@ -216,7 +216,7 @@ def edit_salary(id):
         log_activity("تعديل مستحقات", f"تم تعديل السجل المالي رقم {id}")
         flash("تم تعديل السجل بنجاح", "success")
         conn.close()
-        return redirect(url_for('salaries_management'))
+        return redirect(url_for('salaries'))
     
     salary = conn.execute("SELECT * FROM advanced_salaries WHERE id=?", (id,)).fetchone()
     conn.close()
@@ -231,7 +231,7 @@ def delete_salary(id):
     log_activity("حذف مستحقات", f"تم حذف السجل المالي رقم {id}")
     flash("تم حذف السجل بنجاح", "success")
     conn.close()
-    return redirect(url_for('salaries_management'))
+    return redirect(url_for('salaries'))
 
 # مسارات طباعة الإيصالات المستقلة (الراتب، المكافأة، والسلفة)
 @app.route('/salaries/print/salary/<int:id>')
