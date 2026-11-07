@@ -26,6 +26,20 @@ CREATE TABLE IF NOT EXISTS user_activity_log (
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
 )
 """)
+
+# جدول الرواتب والمستحقات الجديد والمطور ليدعم (الأساسي، الخصومات، المكافآت، السلف، ونوع إيصال المكافأة)
+conn.execute("""
+CREATE TABLE IF NOT EXISTS advanced_salaries (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    employee_name TEXT NOT NULL,
+    basic_salary REAL DEFAULT 0.0,
+    deductions REAL DEFAULT 0.0,
+    bonuses REAL DEFAULT 0.0,
+    advance REAL DEFAULT 0.0,
+    bonus_receipt_type TEXT DEFAULT 'separate',
+    month_year TEXT NOT NULL
+)
+""")
 conn.commit()
 
 def log_activity(action, details=""):
@@ -149,98 +163,102 @@ def users_management():
     conn.close()
     return render_template('users.html', users=users_list, logs=logs)
 
+# ==================== قسم إدارة الرواتب والخصومات والمكافآت والسلف الجديد ====================
+
 @app.route('/salaries', methods=['GET', 'POST'])
 @login_required(roles=['accountant'])
-def salaries():
+def salaries_management():
     conn = get_db()
     if request.method == 'POST':
-        action = request.form.get('action')
-        if action == 'add_employee':
-            name = request.form.get('name')
-            sal_str = request.form.get('default_salary', '0')
-            salary = float(sal_str) if sal_str else 0.0
-            conn.execute("INSERT INTO employees (name, default_salary) VALUES (?, ?)", (name, salary))
-            conn.commit()
-            log_activity("إضافة موظف", f"إضافة الموظف: {name}")
-            flash("تم إضافة الموظف بنجاح", "success")
-        elif action == 'update_employee':
-            emp_id = request.form.get('emp_id')
-            name = request.form.get('name')
-            sal_str = request.form.get('default_salary', '0')
-            salary = float(sal_str) if sal_str else 0.0
-            conn.execute("UPDATE employees SET name=?, default_salary=? WHERE id=?", (name, salary, emp_id))
-            conn.commit()
-            log_activity("تعديل موظف", f"تعديل الموظف رقم {emp_id}")
-            flash("تم تعديل بيانات الموظف بنجاح", "success")
-        elif action == 'delete_employee':
-            emp_id = request.form.get('emp_id')
-            conn.execute("DELETE FROM employees WHERE id=?", (emp_id,))
-            conn.commit()
-            log_activity("حذف موظف", f"حذف الموظف رقم {emp_id}")
-            flash("تم حذف الموظف بنجاح", "success")
-        elif action == 'pay_salary':
-            emp_id = request.form.get('emp_id')
-            month = request.form.get('salary_month')
-            base_amount = float(request.form.get('amount') or 0)
-            status = request.form.get('status', 'منتظم')
-            deduction = float(request.form.get('deduction') or 0)
-            deduction_reason = request.form.get('deduction_reason', '')
-            pay_date = request.form.get('pay_date')
-            final_amount = max(0, base_amount - deduction)
-            
-            emp = conn.execute("SELECT name FROM employees WHERE id=?", (emp_id,)).fetchone()
-            if emp:
-                emp_name = emp['name']
-                cur = conn.cursor()
-                cur.execute("INSERT INTO salary_payments (employee_id, employee_name, month, amount, status, deduction, deduction_reason, pay_date, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                            (emp_id, emp_name, month, final_amount, status, deduction, deduction_reason, pay_date, session['user_id']))
-                pay_id = cur.lastrowid
-                
-                desc_text = f"صرف راتب شهر {month} للموظف: {emp_name}"
-                if deduction > 0:
-                    desc_text += f" - خصم: {int(deduction)} ({deduction_reason})"
-                    
-                conn.execute("INSERT INTO expenses (description, amount, expense_date, category, payment_method, created_by) VALUES (?, ?, ?, ?, ?, ?)",
-                             (desc_text, final_amount, pay_date, 'رواتب', emp_name, session['user_id']))
-                conn.commit()
-                log_activity("صرف راتب", f"صرف راتب شهر {month} للموظف {emp_name}")
-                flash(f"تم صرف راتب الموظف {emp_name} بنجاح", "success")
-                conn.close()
-                return redirect(url_for('print_salary_voucher', payment_id=pay_id))
+        try:
+            employee_name = request.form.get('employee_name')
+            basic_salary = float(request.form.get('basic_salary', 0))
+            deductions = float(request.form.get('deductions', 0))
+            bonuses = float(request.form.get('bonuses', 0))
+            advance = float(request.form.get('advance', 0))
+            bonus_receipt_type = request.form.get('bonus_receipt_type', 'separate')
+            month_year = request.form.get('month_year')
 
-        return redirect(url_for('salaries'))
+            conn.execute(
+                "INSERT INTO advanced_salaries (employee_name, basic_salary, deductions, bonuses, advance, bonus_receipt_type, month_year) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (employee_name, basic_salary, deductions, bonuses, advance, bonus_receipt_type, month_year)
+            )
+            conn.commit()
+            log_activity("رصد راتب ومستحقات", f"تم تسجيل مستحقات الموظف: {employee_name} عن شهر {month_year}")
+            flash("تم حفظ وحفظ السجل بنجاح", "success")
+        except Exception as e:
+            flash(f"حدث خطأ: {e}", "danger")
+        conn.close()
+        return redirect(url_for('salaries_management'))
     
-    employees = conn.execute("SELECT * FROM employees ORDER BY name").fetchall()
-    payments = conn.execute("SELECT * FROM salary_payments ORDER BY id DESC").fetchall()
+    salaries = conn.execute("SELECT * FROM advanced_salaries ORDER BY id DESC").fetchall()
     conn.close()
-    return render_template('salaries.html', employees=employees, payments=payments, today=date.today().isoformat())
+    return render_template('salaries.html', salaries=salaries)
 
-@app.route('/delete_salary_payment/<int:id>')
+@app.route('/salaries/edit/<int:id>', methods=['GET', 'POST'])
 @login_required(roles=['accountant'])
-def delete_salary_payment(id):
+def edit_salary(id):
     conn = get_db()
-    conn.execute("DELETE FROM salary_payments WHERE id=?", (id,))
+    if request.method == 'POST':
+        employee_name = request.form.get('employee_name')
+        basic_salary = float(request.form.get('basic_salary', 0))
+        deductions = float(request.form.get('deductions', 0))
+        bonuses = float(request.form.get('bonuses', 0))
+        advance = float(request.form.get('advance', 0))
+        bonus_receipt_type = request.form.get('bonus_receipt_type', 'separate')
+        month_year = request.form.get('month_year')
+
+        conn.execute(
+            "UPDATE advanced_salaries SET employee_name=?, basic_salary=?, deductions=?, bonuses=?, advance=?, bonus_receipt_type=?, month_year=? WHERE id=?",
+            (employee_name, basic_salary, deductions, bonuses, advance, bonus_receipt_type, month_year, id)
+        )
+        conn.commit()
+        log_activity("تعديل مستحقات", f"تم تعديل السجل المالي رقم {id}")
+        flash("تم تعديل السجل بنجاح", "success")
+        conn.close()
+        return redirect(url_for('salaries_management'))
+    
+    salary = conn.execute("SELECT * FROM advanced_salaries WHERE id=?", (id,)).fetchone()
+    conn.close()
+    return render_template('edit_salary.html', salary=salary)
+
+@app.route('/salaries/delete/<int:id>')
+@login_required(roles=['accountant'])
+def delete_salary(id):
+    conn = get_db()
+    conn.execute("DELETE FROM advanced_salaries WHERE id=?", (id,))
     conn.commit()
-    log_activity("حذف إيصال راتب", f"حذف سجل الراتب رقم {id}")
-    flash("تم حذف سجل الراتب بنجاح", "success")
+    log_activity("حذف مستحقات", f"تم حذف السجل المالي رقم {id}")
+    flash("تم حذف السجل بنجاح", "success")
     conn.close()
-    return redirect(url_for('salaries'))
+    return redirect(url_for('salaries_management'))
 
-@app.route('/print_salary_voucher/<int:payment_id>')
+# مسارات طباعة الإيصالات المستقلة (الراتب، المكافأة، والسلفة)
+@app.route('/salaries/print/salary/<int:id>')
 @login_required(roles=['accountant'])
-def print_salary_voucher(payment_id):
+def print_salary_receipt(id):
     conn = get_db()
-    payment = conn.execute("SELECT * FROM salary_payments WHERE id=?", (payment_id,)).fetchone()
+    salary = conn.execute("SELECT * FROM advanced_salaries WHERE id=?", (id,)).fetchone()
     conn.close()
-    return render_template('print_salary.html', payment=payment)
+    return render_template('print_salary.html', salary=salary)
 
-@app.route('/print_all_employees')
+@app.route('/salaries/print/bonus/<int:id>')
 @login_required(roles=['accountant'])
-def print_all_employees():
+def print_bonus_receipt(id):
     conn = get_db()
-    employees = conn.execute("SELECT * FROM employees ORDER BY name").fetchall()
+    salary = conn.execute("SELECT * FROM advanced_salaries WHERE id=?", (id,)).fetchone()
     conn.close()
-    return render_template('print_employees.html', employees=employees)
+    return render_template('print_bonus.html', salary=salary)
+
+@app.route('/salaries/print/advance/<int:id>')
+@login_required(roles=['accountant'])
+def print_advance_receipt(id):
+    conn = get_db()
+    salary = conn.execute("SELECT * FROM advanced_salaries WHERE id=?", (id,)).fetchone()
+    conn.close()
+    return render_template('print_advance.html', salary=salary)
+
+# ==================================================================================
 
 @app.route('/finance', methods=['GET', 'POST'])
 @login_required(roles=['accountant'])
@@ -569,9 +587,9 @@ def equipment_in():
 @login_required(roles=['storekeeper'])
 def archive():
     conn = get_db()
-    movements = conn.execute("SELECT m.created_at, m.move_date, m.move_type, i.code, i.name, m.qty, u.full_name, m.ref_type FROM stock_movements m JOIN items i ON m.item_id = i.id LEFT JOIN users u ON m.created_by = u.id ORDER BY m.id DESC").fetchall()
+    vouchers = conn.execute("SELECT * FROM issue_vouchers ORDER BY id DESC").fetchall()
     conn.close()
-    return render_template('archive.html', movements=movements)
+    return render_template('archive.html', vouchers=vouchers)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(debug=True)
