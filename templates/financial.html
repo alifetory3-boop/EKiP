@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>القسم المالي - مشروع المركب الرياضي بالمرج</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @page { size: A4; margin: 0; }
+        body { 
+            font-family: 'Cairo', 'Traditional Arabic', 'Tahoma', sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('{{ url_for("static", filename="stadium.jpg") }}') no-repeat center center fixed; 
+            background-size: cover; 
+            min-height: 100vh; 
+            color: #fff; 
+        }
+
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(15, 32, 39, 0.75);
+            backdrop-filter: blur(15px);
+            padding: 15px 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .back-link {
+            color: #4facfe;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.1);
+            padding: 8px 14px;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+
+        .back-link:hover {
+            color: #00f2fe;
+            background: rgba(255,255,255,0.2);
+            transform: translateX(5px);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: rgba(15, 32, 39, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-card h3 { margin: 0 0 10px 0; font-size: 15px; color: #a0aec0; }
+        .stat-card .amount { font-size: 26px; font-weight: 800; }
+        .green { color: #2ecc71; }
+        .red { color: #e74c3c; }
+        .blue { color: #4facfe; }
+
+        .form-section {
+            background: rgba(15, 32, 39, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            align-items: end;
+        }
+
+        .form-group label { display: block; margin-bottom: 5px; font-size: 13px; color: #cbd5e0; }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 9px 12px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.9);
+            color: #000;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .btn-submit {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 15px;
+            height: 40px;
+            width: 100%;
+        }
+        .btn-submit:hover { background: #219653; }
+
+        .table-section {
+            background: rgba(15, 32, 39, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        table { width: 100%; border-collapse: collapse; text-align: center; }
+        th, td { padding: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); font-size: 14px; }
+        th { background: rgba(0, 0, 0, 0.3); color: #4facfe; }
+
+        .tag-in { background: #27ae60; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .tag-out { background: #c0392b; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .tag-custody { background: #d35400; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+
+        .msg { padding: 10px; border-radius: 6px; text-align: center; margin-bottom: 15px; font-weight: bold; }
+        .success { background: #27ae60; color: white; }
+        .danger { background: #c0392b; color: white; }
+
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; color: black; }
+            .header-bar, .form-section { display: none; }
+            .table-section { background: white; border: none; }
+            th { background: #eee; color: black; }
+            td { border-bottom: 1px solid #ccc; color: black; }
+        }
+    </style>
+</head>
+<body>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+        <div class="msg {{ cat }} no-print">{{ msg }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    <div class="header-bar">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <a href="{{ url_for('dashboard') }}" class="back-link no-print">
+                <i class="fa-solid fa-arrow-right"></i> ← العودة للرئيسية
+            </a>
+            <h2 style="margin: 0;">💰 القسم المالي - إدارة الخزينة والعهد</h2>
+        </div>
+        
+        <div>
+            <button onclick="window.print()" class="no-print" style="background:#2980b9; color:white; border:none; padding:8px 15px; border-radius:6px; cursor:pointer; font-weight:bold;">🖨️ طباعة السجل</button>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>رصيد الخزينة الحالي</h3>
+            <div class="amount blue">{{ "%.2f"|format(balance) }} د.ل</div>
+        </div>
+        <div class="stat-card">
+            <h3>إجمالي المقبوضات / الإيداعات</h3>
+            <div class="amount green">{{ "%.2f"|format(total_in) }} د.ل</div>
+        </div>
+        <div class="stat-card">
+            <h3>إجمالي المصروفات والعهد</h3>
+            <div class="amount red">{{ "%.2f"|format(total_out) }} د.ل</div>
+        </div>
+    </div>
+
+    <div class="form-section no-print">
+        <h3 style="margin-top: 0; margin-bottom: 15px; color: #4facfe;">+ تسجيل حركة مالية (إيداع / صرف / عهدة)</h3>
+        <form method="POST">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>نوع الحركة</label>
+                    <select name="trans_type" required>
+                        <option value="in">إيداع / سند قبض (+)</option>
+                        <option value="out">مصروف / سند صرف (-)</option>
+                        <option value="custody">تسليم عهدة مالية (-)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>المبلغ (د.ل)</label>
+                    <input type="number" step="0.01" name="amount" min="0.01" required placeholder="0.00">
+                </div>
+                <div class="form-group">
+                    <label>التاريخ</label>
+                    <input type="date" name="expense_date" value="{{ today }}" required>
+                </div>
+                <div class="form-group">
+                    <label>المسؤول / المستلم</label>
+                    <input type="text" name="person" placeholder="اسم المستلم أو الفني" required>
+                </div>
+                <div class="form-group" style="grid-column: span 2;">
+                    <label>البيان / سبب الحركة المالية</label>
+                    <input type="text" name="description" placeholder="مشتريات مواد، أجور عمالة..." required>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn-submit">💾 حفظ الحركة</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-section">
+        <h3 style="margin-top: 0; margin-bottom: 15px;">📋 سجل المعاملات المالية والخزينة</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>م</th>
+                    <th>التاريخ</th>
+                    <th>نوع الحركة</th>
+                    <th>المبلغ</th>
+                    <th>البيان / التفاصيل</th>
+                    <th>المسؤول / المستلم</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in expenses %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ t.expense_date }}</td>
+                    <td>
+                        {% if t.category == 'إيراد' %}
+                            <span class="tag-in">سند قبض</span>
+                        {% elif t.category == 'عهدة' %}
+                            <span class="tag-custody">عهدة مالية</span>
+                        {% else %}
+                            <span class="tag-out">سند صرف</span>
+                        {% endif %}
+                    </td>
+                    <td style="font-weight: bold;">{{ "%.2f"|format(t.amount) }} د.ل</td>
+                    <td>{{ t.description }}</td>
+                    <td>{{ t.payment_method }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" style="text-align:center;">لا توجد حركات مالية مسجلة حتى الآن.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</body>
+</html>

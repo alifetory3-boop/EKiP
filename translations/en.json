@@ -1,0 +1,22 @@
+{
+  "dashboard": "Dashboard",
+  "items": "Items",
+  "requisitions": "Requisitions",
+  "purchase": "Purchase",
+  "issue": "Issue",
+  "equipment": "Handover",
+  "inventory": "Inventory",
+  "archive": "Archive",
+  "backup": "Backup",
+  "finance": "Finance",
+  "welcome": "Welcome",
+  "logout": "Logout",
+  "total_items": "Total Items",
+  "low_stock": "Low Stock",
+  "balances": "Current Balances",
+  "code": "Code",
+  "name": "Item Name",
+  "unit": "Unit",
+  "balance": "Balance",
+  "min_qty": "Min Qty"
+}

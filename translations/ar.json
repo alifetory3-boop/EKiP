@@ -1,0 +1,22 @@
+{
+  "dashboard": "الرئيسية",
+  "items": "الأصناف",
+  "requisitions": "الطلبيات",
+  "purchase": "إذن شراء",
+  "issue": "إذن صرف",
+  "equipment": "تسليم واستلام",
+  "inventory": "الجرد",
+  "archive": "الأرشيف",
+  "backup": "نسخة احتياطية",
+  "finance": "المالية",
+  "welcome": "مرحباً",
+  "logout": "تسجيل خروج",
+  "total_items": "إجمالي الأصناف",
+  "low_stock": "تحت الحد الأدنى",
+  "balances": "الأرصدة الحالية",
+  "code": "الكود",
+  "name": "الصنف",
+  "unit": "الوحدة",
+  "balance": "الرصيد",
+  "min_qty": "الحد الأدنى"
+}

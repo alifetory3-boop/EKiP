@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>دخول - المنظومة المالية</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', Tahoma, sans-serif; }
+    
+    body { 
+      background: url('{{ url_for("static", filename="stadium.jpg") }}') no-repeat center center fixed; 
+      background-size: cover;
+      display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;
+    }
+    
+    .box { 
+      background: rgba(15, 32, 39, 0.85); 
+      backdrop-filter: blur(15px);
+      padding: 20px;
+      border-radius: 10px; 
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+      width: 100%; 
+      max-width: 260px;
+      border: 1px solid rgba(255,255,255,0.15);
+      text-align: center;
+    }
+    
+    h2 { 
+      color: #ffffff; 
+      margin-bottom: 12px; 
+      font-size: 16px; 
+      font-weight: 800; 
+    }
+    
+    input { 
+      width: 100%; 
+      padding: 8px 10px; 
+      margin: 6px 0; 
+      background: rgba(255, 255, 255, 0.95); 
+      border: 1px solid rgba(255, 255, 255, 0.4); 
+      border-radius: 5px; 
+      color: #000; 
+      font-size: 12px; 
+      font-weight: 600;
+      transition: 0.3s;
+    }
+    input:focus { outline: none; border-color: #4facfe; box-shadow: 0 0 5px rgba(79, 172, 254, 0.5); }
+    
+    button { 
+      width: 100%; 
+      padding: 8px; 
+      background: #27ae60; 
+      color: #fff; 
+      border: none; 
+      border-radius: 5px; 
+      cursor: pointer; 
+      font-size: 13px; 
+      font-weight: 700; 
+      margin-top: 10px; 
+      transition: 0.3s;
+    }
+    button:hover { background: #219653; transform: translateY(-1px); }
+    
+    .msg { padding: 8px; border-radius: 5px; background: rgba(231, 76, 60, 0.9); color: #fff; margin-bottom: 10px; font-size: 11px; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2><i class="fa-solid fa-lock" style="color:#4facfe;"></i> تسجيل الدخول</h2>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+        <div class="msg">{{ msg }}</div>
+      {% endfor %}
+    {% endwith %}
+    
+    <form method="post">
+      <input name="username" placeholder="اسم المستخدم" required>
+      <input name="password" type="password" placeholder="كلمة المرور" required>
+      <button type="submit">دخول النظام</button>
+    </form>
+  </div>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>الأرشيف العام وسجل الحركات المخزنية</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; }
+        body { 
+            font-family: 'Cairo', Tahoma, sans-serif; 
+            margin: 0; padding: 20px; 
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('{{ url_for("static", filename="stadium.jpg") }}') no-repeat center center fixed; 
+            background-size: cover; min-height: 100vh; color: #fff; 
+        }
+        .header-bar { 
+            display: flex; justify-content: space-between; align-items: center; 
+            background: rgba(15, 32, 39, 0.9); padding: 12px 20px; border-radius: 10px; margin-bottom: 20px; 
+            border: 1px solid rgba(255,255,255,0.1); 
+        }
+        .back-link { color: #4facfe; text-decoration: none; font-weight: bold; font-size: 14px; background: rgba(255,255,255,0.05); padding: 6px 12px; border-radius: 6px; }
+        .section-box { background: rgba(15, 32, 39, 0.85); border-radius: 10px; padding: 15px; border: 1px solid rgba(255,255,255,0.1); }
+        .section-box h3 { margin: 0 0 15px 0; color: #4facfe; font-size: 16px; }
+        .table-responsive { width: 100%; overflow-x: auto; max-height: 500px; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: center; }
+        th, td { padding: 8px 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); font-size: 13px; }
+        th { background: rgba(0, 0, 0, 0.5); color: #4facfe; position: sticky; top: 0; }
+        .tag-in { background: #27ae60; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; }
+        .tag-out { background: #c0392b; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; }
+    </style>
+</head>
+<body>
+
+    <div class="header-bar">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <a href="{{ url_for('dashboard') }}" class="back-link"><i class="fa-solid fa-arrow-right"></i> الرئيسية</a>
+            <h2 style="margin: 0; font-size: 18px;"><i class="fa-solid fa-box-archive"></i> الأرشيف العام وسجل الحركات</h2>
+        </div>
+    </div>
+
+    <div class="section-box">
+        <h3><i class="fa-solid fa-clock-rotate-left"></i> سجل حركات وتاريخ المخزون (إدخال وإخراج)</h3>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>م</th>
+                        <th>تاريخ الحركة</th>
+                        <th>نوع الحركة</th>
+                        <th>كود الصنف</th>
+                        <th>اسم الصنف</th>
+                        <th>الكمية</th>
+                        <th>نوع الإذن / المرجع</th>
+                        <th>المسؤول</th>
+                        <th>وقت التسجيل</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in movements %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ m.move_date }}</td>
+                        <td>
+                            {% if m.move_type == 'in' %}
+                            <span class="tag-in">إدخال / توريد</span>
+                            {% else %}
+                            <span class="tag-out">إخراج / صرف</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ m.code }}</td>
+                        <td style="font-weight: bold; text-align: right; padding-right: 10px;">{{ m.name }}</td>
+                        <td style="font-weight: bold;">{{ m.qty | int }}</td>
+                        <td>{{ m.ref_type }}</td>
+                        <td>{{ m.full_name or 'مدير النظام' }}</td>
+                        <td style="color: #cbd5e0; font-size: 11px;">{{ m.created_at }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="9" style="text-align: center; color: #a0aec0; padding: 20px;">لا توجد حركات مسجلة في الأرشيف حتى الآن.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</body>
+</html>

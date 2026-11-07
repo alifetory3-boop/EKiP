@@ -1,0 +1,22 @@
+{
+  "dashboard": "Ana Sayfa",
+  "items": "Ürünler",
+  "requisitions": "Talepler",
+  "purchase": "Satın Alma",
+  "issue": "Çıkış",
+  "equipment": "Teslimat",
+  "inventory": "Envanter",
+  "archive": "Arşiv",
+  "backup": "Yedekleme",
+  "finance": "Finans",
+  "welcome": "Hoş geldiniz",
+  "logout": "Çıkış Yap",
+  "total_items": "Toplam Ürün",
+  "low_stock": "Düşük Stok",
+  "balances": "Mevcut Bakiyeler",
+  "code": "Kod",
+  "name": "Ürün Adı",
+  "unit": "Birim",
+  "balance": "Bakiye",
+  "min_qty": "Min Miktar"
+}

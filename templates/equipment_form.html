@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>إيصال تسليم واستلام</title>
+    <style>
+        @page { size: A4; margin: 0; }
+        body { font-family: 'Traditional Arabic', Tahoma, sans-serif; margin: 0; padding: 0; background: #fff; color: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        
+        .page {
+            width: 210mm; height: 297mm;
+            background: url('{{ url_for("static", filename="letterhead.png") }}') no-repeat center top;
+            background-size: cover;
+            position: relative;
+            padding: 170px 25px 90px 25px; 
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header-title { text-align: center; margin-bottom: 10px; }
+        .header-title h2 { margin: 0; font-size: 22px; font-weight: bold; }
+        .header-title p { margin: 3px 0; font-size: 14px; }
+
+        .meta-info { 
+            display: flex; justify-content: space-between; flex-wrap: wrap;
+            margin-bottom: 12px; font-size: 14px; font-weight: bold; 
+            background: rgba(255, 255, 255, 0.7); padding: 8px; border-radius: 5px;
+        }
+        .meta-info div { width: 48%; margin-bottom: 6px; }
+
+        /* شريط البحث السريع */
+        .search-box {
+            margin-bottom: 10px;
+            text-align: right;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 5px 10px;
+            font-size: 13px;
+            border: 1px solid #3498db;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        table { 
+            width: 100%; border-collapse: collapse; 
+            background: rgba(255, 255, 255, 0.9); 
+            margin-bottom: auto; 
+        }
+        th, td { border: 1px solid #000; padding: 6px 8px; text-align: center; font-size: 13px; }
+        th { background: rgba(224, 224, 224, 0.9); font-weight: bold; }
+        
+        input[type="text"], input[type="number"], input[type="date"], input[type="time"], select { 
+            width: 95%; padding: 4px; text-align: center; font-size: 13px; 
+            border: 1px solid #ccc; border-radius: 3px; background: rgba(255,255,255,0.8); 
+        }
+
+        .signatures { 
+            display: flex; justify-content: space-between; 
+            text-align: center; font-size: 15px; font-weight: bold; 
+            position: absolute;
+            bottom: 100px; 
+            left: 30px;
+            right: 30px;
+        }
+        .sig-box { width: 30%; }
+        .sig-line { border-bottom: 1px solid #000; margin-top: 20px; } 
+
+        .btn-container { text-align: center; margin-top: 15px; display: flex; justify-content: center; gap: 10px; }
+        .btn { padding: 8px 20px; font-size: 15px; cursor: pointer; color: white; border: none; border-radius: 5px; font-weight: bold; }
+        .btn-success { background: #27ae60; }
+        .btn-primary { background: #2980b9; }
+
+        .msg { padding: 8px; border-radius: 5px; text-align: center; margin-bottom: 10px; font-weight: bold; font-size: 13px; }
+        .success { background: #27ae60; color: white; }
+        .danger { background: #e74c3c; color: white; }
+
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; }
+            .page { box-shadow: none; padding: 170px 25px 90px 25px; }
+            input[type="text"], 
+            input[type="number"], 
+            input[type="date"], 
+            input[type="time"], 
+            select {
+                border: none !important;
+                background: transparent !important;
+                appearance: none !important;
+                -webkit-appearance: none !important;
+                outline: none !important;
+                box-shadow: none !important;
+                font-weight: bold;
+            }
+        }
+    </style>
+</head>
+<body>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% for cat, msg in messages %}
+    <div class="msg {{ cat }} no-print" style="max-width: 600px; margin: 10px auto;">{{ msg }}</div>
+  {% endfor %}
+{% endwith %}
+
+<div class="page">
+    <div class="no-print" style="text-align: left; margin-bottom: 5px;">
+        <a href="{{ url_for('dashboard') }}" style="color: #2980b9; text-decoration: none; font-weight: bold;">← العودة للرئيسية</a>
+    </div>
+
+    <div class="header-title">
+        <h2>إيصال تسليم واستلام مواد</h2>
+        <p>مشروع انشاء مركب رياضي بالمرج</p>
+    </div>
+
+    <form method="POST">
+        <div class="meta-info">
+            <div>رقم الإشاري (7 أرقام): 
+                <input type="text" name="voucher_no" id="autoVoucherNo" readonly style="background: #eee; font-weight: bold; width: 130px; display: inline-block;">
+            </div>
+            <div>نوع العملية: 
+                <select name="operation_type" required style="width: 130px; display: inline-block;">
+                    <option value="out" {% if type == 'out' %}selected{% endif %}>تسليم</option>
+                    <option value="in" {% if type == 'in' %}selected{% endif %}>استلام</option>
+                </select>
+            </div>
+            <div>اسم المسؤول / الموظف: <input type="text" name="worker" placeholder="اسم المسلم أو المستلم" required style="width: 140px; display: inline-block;"></div>
+            <div>تاريخ الحركة: <input type="date" name="date" value="{{ today }}" style="width: 130px; display: inline-block;"></div>
+            <div>وقت الحركة: <input type="time" name="time" id="movementTime" style="width: 100px; display: inline-block;"></div>
+            <div style="width: 100%; margin-top: 5px;">ملاحظات / البيان: <input type="text" name="notes" placeholder="ملاحظات الحركة" style="width: 80%;"></div>
+        </div>
+
+        <!-- خانة البحث السريع برقم الإشاري أو اسم الصنف -->
+        <div class="search-box no-print">
+            <input type="text" id="tableSearch" placeholder="🔍 بحث برقم الإشاري أو اسم الصنف..." onkeyup="searchTable()">
+        </div>
+
+        <table id="consumableTable">
+            <thead>
+                <tr>
+                    <th style="width: 40px;">م</th>
+                    <th>بيان الصنف / المادة</th>
+                    <th style="width: 120px;">الكمية</th>
+                    <th>الوحدة</th>
+                    <th class="no-print" style="width: 60px;">إجراء</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>
+                        <select name="item_id[]" required onchange="updateUnit(this)">
+                            <option value="">-- اختر الصنف --</option>
+                            {% for item in items %}
+                            <option value="{{ item.id }}" data-unit="{{ item.unit }}">{{ item.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td><input type="number" step="0.01" name="qty[]" value="1" min="0.01" required></td>
+                    <td><span class="unit-display" style="font-weight: bold; color: #2c3e50;">-</span></td>
+                    <td class="no-print"><button type="button" onclick="removeRow(this)" style="color:red; background:none; border:none; cursor:pointer; font-weight:bold;">حذف</button></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="no-print" style="margin-top: 10px;">
+            <button type="button" class="btn btn-primary" onclick="addRow()" style="padding: 6px 15px; font-size: 13px;">+ إضافة صنف آخر</button>
+        </div>
+
+        <div class="signatures">
+            <div class="sig-box"><p>الطرف المسلم</p><div class="sig-line"></div></div>
+            <div class="sig-box"><p>الطرف المستلم</p><div class="sig-line"></div></div>
+            <div class="sig-box"><p>اعتماد الإدارة</p><div class="sig-line"></div></div>
+        </div>
+
+        <div class="btn-container no-print">
+            <button type="submit" class="btn btn-success">💾 حفظ الإيصال وتحديث المخزون</button>
+            <button type="button" class="btn btn-primary" onclick="window.print()">🖨️ طباعة الإيصال</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    // توليد رقم إشاري فريد من 7 أرقام تلقائياً
+    document.addEventListener("DOMContentLoaded", function() {
+        const random7Digits = Math.floor(1000000 + Math.random() * 9000000);
+        document.getElementById('autoVoucherNo').value = random7Digits;
+
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        document.getElementById('movementTime').value = `${hours}:${minutes}`;
+    });
+
+    function updateUnit(selectElem) {
+        const selectedOption = selectElem.options[selectElem.selectedIndex];
+        const unit = selectedOption.getAttribute('data-unit') || '-';
+        const row = selectElem.closest('tr');
+        row.querySelector('.unit-display').innerText = unit;
+    }
+
+    function searchTable() {
+        let input = document.getElementById("tableSearch");
+        let filter = input.value.toLowerCase();
+        let voucherNo = document.getElementById("autoVoucherNo").value.toLowerCase();
+        let table = document.getElementById("consumableTable");
+        let tr = table.getElementsByTagName("tr");
+
+        if (voucherNo.indexOf(filter) > -1) {
+            for (let i = 1; i < tr.length; i++) {
+                tr[i].style.display = "";
+            }
+            return;
+        }
+
+        for (let i = 1; i < tr.length; i++) {
+            let tdItem = tr[i].getElementsByTagName("td")[1];
+            if (tdItem) {
+                let txtValue = tdItem.textContent || tdItem.innerText;
+                if (txtValue.toLowerCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+    }
+
+    function addRow() {
+        let table = document.getElementById("consumableTable").getElementsByTagName('tbody')[0];
+        let rowCount = table.rows.length + 1;
+        let newRow = table.insertRow();
+        
+        let html = `
+            <td>${rowCount}</td>
+            <td>
+                <select name="item_id[]" required onchange="updateUnit(this)">
+                    <option value="">-- اختر الصنف --</option>
+                    {% for item in items %}
+                    <option value="{{ item.id }}" data-unit="{{ item.unit }}">{{ item.name }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td><input type="number" step="0.01" name="qty[]" value="1" min="0.01" required></td>
+            <td><span class="unit-display" style="font-weight: bold; color: #2c3e50;">-</span></td>
+            <td class="no-print"><button type="button" onclick="removeRow(this)" style="color:red; background:none; border:none; cursor:pointer; font-weight:bold;">حذف</button></td>
+        `;
+        
+        newRow.innerHTML = html;
+    }
+
+    function removeRow(btn) {
+        let row = btn.closest('tr');
+        row.remove();
+        updateRowNumbers();
+    }
+
+    function updateRowNumbers() {
+        let rows = document.querySelectorAll("#consumableTable tbody tr");
+        rows.forEach((row, index) => {
+            row.cells[0].innerText = index + 1;
+        });
+    }
+</script>
+
+</body>
+</html>

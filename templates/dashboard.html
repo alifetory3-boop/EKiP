@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>الرئيسية - المركب الرياضي بالمرج</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; font-family: 'Cairo', Tahoma, sans-serif; }
+        body { 
+            margin: 0; padding: 20px; 
+            background: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)), url('{{ url_for("static", filename="stadium.jpg") }}') no-repeat center center fixed; 
+            background-size: cover; min-height: 100vh; color: #fff; 
+        }
+        .header-bar { 
+            display: flex; justify-content: space-between; align-items: center; 
+            background: rgba(15, 32, 39, 0.9); backdrop-filter: blur(15px); 
+            padding: 12px 20px; border-radius: 10px; margin-bottom: 20px; 
+            border: 1px solid rgba(255,255,255,0.1); 
+        }
+        .user-info { display: flex; align-items: center; gap: 10px; }
+        .user-info span { font-weight: 700; color: #4facfe; font-size: 14px; }
+        .logout-btn { 
+            background: #e74c3c; color: white; padding: 6px 12px; border-radius: 6px; 
+            text-decoration: none; font-size: 12px; font-weight: 700; transition: 0.3s; 
+        }
+        .logout-btn:hover { background: #c0392b; }
+
+        .dashboard-grid { 
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+            gap: 15px; margin-bottom: 20px; 
+        }
+        .card { 
+            background: rgba(15, 32, 39, 0.85); backdrop-filter: blur(12px); 
+            border-radius: 10px; padding: 20px; text-align: center; 
+            border: 1px solid rgba(255,255,255,0.1); transition: 0.3s;
+            text-decoration: none; color: white; display: block;
+        }
+        .card:hover { transform: translateY(-3px); border-color: #4facfe; background: rgba(15, 32, 39, 0.95); }
+        .card i { font-size: 30px; color: #4facfe; margin-bottom: 10px; }
+        .card h3 { margin: 0 0 5px 0; font-size: 16px; font-weight: 700; }
+        .card p { margin: 0; font-size: 12px; color: #cbd5e0; font-weight: 600; }
+
+        .section-box { 
+            background: rgba(15, 32, 39, 0.85); backdrop-filter: blur(12px); 
+            border-radius: 10px; padding: 15px; margin-bottom: 20px; 
+            border: 1px solid rgba(255,255,255,0.1); 
+        }
+        .section-box h3 { margin: 0 0 10px 0; color: #4facfe; font-size: 15px; font-weight: 700; }
+
+        .table-responsive { width: 100%; overflow-x: auto; max-height: 200px; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: center; }
+        th, td { padding: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); font-size: 13px; }
+        th { background: rgba(0, 0, 0, 0.4); color: #4facfe; position: sticky; top: 0; font-weight: 700; }
+        
+        .btn { background: #27ae60; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 12px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
+        .btn-blue { background: #2980b9; }
+        .btn-blue:hover { background: #2471a3; }
+    </style>
+</head>
+<body>
+
+    <div class="header-bar">
+        <div class="user-info">
+            <i class="fa-solid fa-user-tie" style="font-size: 20px; color: #4facfe;"></i>
+            <span>مرحباً بك، {{ session.get('full_name') }} ({{ 'مدير النظام' if session.get('role') == 'admin' else ('محاسب' if session.get('role') == 'accountant' else 'أمين مخزن') }})</span>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            {% if session.get('role') == 'admin' %}
+            <a href="{{ url_for('users_management') }}" class="btn btn-blue">
+                <i class="fa-solid fa-user-shield"></i> إدارة المستخدمين وسجل الحركات
+            </a>
+            {% endif %}
+            <a href="{{ url_for('logout') }}" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> خروج</a>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        {% if session.get('role') in ['admin', 'accountant'] %}
+        <a href="{{ url_for('salaries') }}" class="card">
+            <i class="fa-solid fa-money-check-dollar"></i>
+            <h3>إدارة الرواتب</h3>
+            <p>صرف الرواتب، الخصومات وإيصالات A5</p>
+        </a>
+        <a href="{{ url_for('finance') }}" class="card">
+            <i class="fa-solid fa-vault"></i>
+            <h3>الخزينة والمالية</h3>
+            <p>متابعة الإيرادات، المصروفات والأرصدة</p>
+        </a>
+        {% endif %}
+
+        {% if session.get('role') in ['admin', 'storekeeper'] %}
+        <a href="{{ url_for('items') }}" class="card">
+            <i class="fa-solid fa-boxes-stacked"></i>
+            <h3>المخزون والمواد</h3>
+            <p>إضافة وتعديل المواد والأصناف</p>
+        </a>
+        <a href="{{ url_for('purchase') }}" class="card">
+            <i class="fa-solid fa-file-invoice"></i>
+            <h3>إذن الشراء / التوريد</h3>
+            <p>تسجيل المشتريات وإدخالها للمخزن</p>
+        </a>
+        <a href="{{ url_for('issue') }}" class="card">
+            <i class="fa-solid fa-file-export"></i>
+            <h3>أمر صرف مواد</h3>
+            <p>صرف مواد للأقسام والمرافق</p>
+        </a>
+        <a href="{{ url_for('equipment_out') }}" class="card">
+            <i class="fa-solid fa-handshake-angle"></i>
+            <h3>إدارة العهد</h3>
+            <p>تسليم واستلام العهد من العاملين</p>
+        </a>
+        <a href="{{ url_for('inventory') }}" class="card">
+            <i class="fa-solid fa-warehouse"></i>
+            <h3>جرد المخازن</h3>
+            <p>متابعة الأرصدة والحركات المخزنية</p>
+        </a>
+        <a href="{{ url_for('archive') }}" class="card">
+            <i class="fa-solid fa-box-archive"></i>
+            <h3>الأرشيف العام</h3>
+            <p>سجل الحركات والأذونات السابقة</p>
+        </a>
+        {% endif %}
+    </div>
+
+    {% if low_stock and session.get('role') in ['admin', 'storekeeper'] %}
+    <div class="section-box" style="border-color: #e74c3c;">
+        <h3 style="color: #e74c3c;"><i class="fa-solid fa-triangle-exclamation"></i> تنبيه: مواد وصلت للحد الأدنى في المخزن</h3>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>الكود</th>
+                        <th>اسم المادة</th>
+                        <th>التصنيف</th>
+                        <th>الرصيد الحالي</th>
+                        <th>الحد الأدنى</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in low_stock %}
+                    <tr>
+                        <td>{{ item.code }}</td>
+                        <td style="font-weight: 700; text-align: right;">{{ item.name }}</td>
+                        <td>{{ item.category }}</td>
+                        <td style="color: #e74c3c; font-weight: 700;">{{ item.balance }} {{ item.unit }}</td>
+                        <td>{{ item.min_qty }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+</body>
+</html>

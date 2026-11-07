@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ doc_title }}</title>
+    <style>
+        @page { size: A4; margin: 0; }
+        body { font-family: 'Traditional Arabic', Tahoma, sans-serif; margin: 0; padding: 0; background: #fff; color: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        
+        .page {
+            width: 210mm; height: 297mm;
+            background: url('{{ url_for("static", filename="letterhead.png") }}') no-repeat center top;
+            background-size: cover;
+            position: relative;
+            padding: 170px 25px 90px 25px; 
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header-title { text-align: center; margin-bottom: 10px; }
+        .header-title h2 { margin: 0; font-size: 20px; font-weight: bold; }
+        .header-title p { margin: 3px 0; font-size: 13px; }
+
+        .meta-info { 
+            display: flex; justify-content: space-between; flex-wrap: wrap;
+            margin-bottom: 10px; font-size: 13px; font-weight: bold; 
+            background: rgba(255, 255, 255, 0.7); padding: 5px 8px; border-radius: 4px;
+        }
+        
+        table { 
+            width: 100%; border-collapse: collapse; 
+            background: rgba(255, 255, 255, 0.9); 
+            margin-bottom: auto; 
+        }
+        th, td { border: 1px solid #000; padding: 5px 6px; text-align: center; font-size: 13px; }
+        th { background: rgba(224, 224, 224, 0.9); font-weight: bold; }
+        
+        input[type="text"], input[type="number"], select { 
+            width: 95%; padding: 3px; text-align: center; font-size: 13px; 
+            border: 1px solid #ccc; border-radius: 3px; background: rgba(255,255,255,0.8); 
+        }
+
+        .signatures { 
+            display: flex; justify-content: space-between; 
+            text-align: center; font-size: 15px; font-weight: bold; 
+            position: absolute;
+            bottom: 90px; 
+            left: 30px;
+            right: 30px;
+        }
+        .sig-box { width: 40%; }
+        .sig-line { border-bottom: 1px solid #000; margin-top: 15px; } 
+
+        .btn-container { text-align: center; margin-top: 15px; display: flex; justify-content: center; gap: 10px; }
+        .btn { padding: 6px 15px; font-size: 14px; cursor: pointer; color: white; border: none; border-radius: 4px; font-weight: bold; }
+        .btn-success { background: #27ae60; }
+        .btn-warning { background: #e67e22; }
+        .btn-primary { background: #2980b9; }
+
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; }
+            .page { box-shadow: none; padding: 170px 25px 90px 25px; }
+            input, select { border: none; background: transparent; appearance: none; font-weight: bold; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page">
+    <div class="header-title">
+        <h2>{{ doc_title }}</h2>
+        <p>مشروع انشاء مركب رياضي بالمرج</p>
+    </div>
+
+    <form method="POST">
+        <div class="meta-info">
+            <div>التاريخ: <input type="date" name="voucher_date" value="{{ today }}"></div>
+            <div>الإشاري / المورد: <input type="text" name="supplier" value="{{ carried_data['supplier'] if carried_data and carried_data['supplier'] else '' }}" placeholder="رقم الإشاري" style="width: 150px; display: inline-block;"></div>
+        </div>
+
+        <table id="poTable">
+            <thead>
+                <tr>
+                    <th style="width: 40px;">م</th>
+                    <th>اسم الصنف / البيان</th>
+                    <th style="width: 90px;">الكمية</th>
+                    <th style="width: 110px;">السعر التقديري</th>
+                    <th style="width: 110px;">الإجمالي</th>
+                    <th class="no-print" style="width: 60px;">إجراء</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if carried_data and carried_data['items'] %}
+                    {% for item in carried_data['items'] %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td><input type="text" name="item_name[]" value="{{ item.name }}"></td>
+                        <td><input type="number" name="qty[]" value="{{ item.qty }}" min="1" oninput="calcTotal(this)"></td>
+                        <td><input type="number" name="price[]" value="{{ item.price }}" step="0.01" oninput="calcTotal(this)"></td>
+                        <td class="row-total">0.00</td>
+                        <td class="no-print"><button type="button" onclick="removeRow(this)" style="color:red; background:none; border:none; cursor:pointer; font-weight:bold;">حذف</button></td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td>1</td>
+                        <td>
+                            <select name="item_name[]">
+                                <option value="">-- اختر صنفاً --</option>
+                                {% for item in items %}
+                                <option value="{{ item.name }}">{{ item.name }} ({{ item.unit }})</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td><input type="number" name="qty[]" value="1" min="1" oninput="calcTotal(this)"></td>
+                        <td><input type="number" name="price[]" value="0.00" step="0.01" oninput="calcTotal(this)"></td>
+                        <td class="row-total">0.00</td>
+                        <td class="no-print"><button type="button" onclick="removeRow(this)" style="color:red; background:none; border:none; cursor:pointer; font-weight:bold;">حذف</button></td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+
+        <div class="no-print" style="margin-top: 8px;">
+            <button type="button" class="btn btn-primary" onclick="addRow()" style="padding: 4px 10px; font-size: 12px;">+ إضافة سطر</button>
+        </div>
+
+        <div style="text-align: left; font-size: 14px; font-weight: bold; margin: 10px 0;">
+            الإجمالي العام: <span id="grandTotal">0.00</span> د.ل
+        </div>
+
+        <div class="signatures">
+            <div class="sig-box"><p>المسلم</p><div class="sig-line"></div></div>
+            <div class="sig-box"><p>المستلم</p><div class="sig-line"></div></div>
+        </div>
+
+        <div class="btn-container no-print">
+            {% if is_purchase %}
+            <button type="submit" class="btn btn-warning">➡️ نقل إلى إذن الصرف</button>
+            {% else %}
+            <button type="submit" class="btn btn-success">💾 حفظ الصرف النهائي</button>
+            {% endif %}
+            
+            <button type="button" class="btn btn-primary" onclick="window.print()">🖨️ طباعة</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    function addRow() {
+        let table = document.getElementById("poTable").getElementsByTagName('tbody')[0];
+        let rowCount = table.rows.length + 1;
+        let newRow = table.insertRow();
+        
+        newRow.innerHTML = `
+            <td>${rowCount}</td>
+            <td>
+                <select name="item_name[]">
+                    <option value="">-- اختر صنفاً --</option>
+                    {% for item in items %}
+                    <option value="{{ item.name }}">{{ item.name }} ({{ item.unit }})</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td><input type="number" name="qty[]" value="1" min="1" oninput="calcTotal(this)"></td>
+            <td><input type="number" name="price[]" value="0.00" step="0.01" oninput="calcTotal(this)"></td>
+            <td class="row-total">0.00</td>
+            <td class="no-print"><button type="button" onclick="removeRow(this)" style="color:red; background:none; border:none; cursor:pointer; font-weight:bold;">حذف</button></td>
+        `;
+    }
+
+    function removeRow(btn) {
+        let row = btn.closest('tr');
+        row.remove();
+        updateRowNumbers();
+        calculateGrandTotal();
+    }
+
+    function updateRowNumbers() {
+        let rows = document.querySelectorAll("#poTable tbody tr");
+        rows.forEach((row, index) => {
+            row.cells[0].innerText = index + 1;
+        });
+    }
+
+    function calcTotal(element) {
+        let row = element.closest('tr');
+        let qty = parseFloat(row.cells[2].querySelector('input').value) || 0;
+        let price = parseFloat(row.cells[3].querySelector('input').value) || 0;
+        let total = qty * price;
+        row.cells[4].innerText = total.toFixed(2);
+        calculateGrandTotal();
+    }
+
+    function calculateGrandTotal() {
+        let totals = document.querySelectorAll('.row-total');
+        let sum = 0;
+        totals.forEach(t => { sum += parseFloat(t.innerText) || 0; });
+        document.getElementById('grandTotal').innerText = sum.toFixed(2);
+    }
+
+    document.querySelectorAll('#poTable tbody tr').forEach(row => {
+        let qtyInput = row.cells[2].querySelector('input');
+        if (qtyInput) calcTotal(qtyInput);
+    });
+</script>
+
+</body>
+</html>

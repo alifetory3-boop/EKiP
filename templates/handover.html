@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>محضر تسليم واستلام</title>
+    <style>
+        @page { size: A4; margin: 0; }
+        body { font-family: 'Traditional Arabic', Tahoma, sans-serif; margin: 0; padding: 0; background: #fff; color: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        
+        .page {
+            width: 210mm; height: 297mm;
+            background: url('{{ url_for("static", filename="letterhead.png") }}') no-repeat center top;
+            background-size: cover;
+            position: relative;
+            padding: 180px 25px 100px 25px; 
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header-title { text-align: center; margin-bottom: 15px; }
+        .header-title h2 { margin: 0; font-size: 20px; font-weight: bold; }
+        .header-title p { margin: 3px 0; font-size: 14px; }
+
+        .details { 
+            display: flex; justify-content: space-between; flex-wrap: wrap;
+            margin-bottom: 10px; font-size: 14px; font-weight: bold; 
+            background: rgba(255, 255, 255, 0.6); padding: 5px; border-radius: 5px;
+        }
+        .details div { width: 48%; margin-bottom: 5px; } 
+
+        table { 
+            width: 100%; border-collapse: collapse; 
+            background: rgba(255, 255, 255, 0.8); 
+            margin-bottom: auto; 
+        }
+        th, td { border: 1px solid #000; padding: 4px 6px; text-align: center; font-size: 13px; height: auto; }
+        th { background: rgba(224, 224, 224, 0.9); font-weight: bold; }
+        
+        input[type="text"], input[type="number"], select { 
+            width: 95%; padding: 4px; text-align: center; font-size: 13px; 
+            border: 1px solid #ccc; border-radius: 3px; background: rgba(255,255,255,0.8); 
+        }
+
+        .signatures { 
+            display: flex; justify-content: space-between; 
+            text-align: center; font-size: 16px; font-weight: bold; 
+            position: absolute;
+            bottom: 100px; 
+            left: 30px;
+            right: 30px;
+        }
+        .sig-box { width: 30%; }
+        .sig-line { border-bottom: 1px solid #000; margin-top: 15px; } 
+
+        @media print { .no-print { display: none; } }
+    </style>
+</head>
+<body>
+  <div class="no-print" style="text-align: center; margin-bottom: 10px; padding-top: 10px;">
+    <button onclick="window.print()" style="padding: 8px 20px; background: #27ae60; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer;">🖨️ طباعة / حفظ PDF بالترويسة الرسمية</button>
+    <a href="{{ url_for('dashboard') }}" style="margin-right: 15px; text-decoration: none; font-weight: bold; color: #2c3e50;">الرئيسية</a>
+  </div>
+
+  <div class="page">
+    <div class="header-title">
+      <h2>محضر تسليم واستلام مواد</h2>
+      <p>مشروع انشاء مركب رياضي بالمرج[cite: 5]</p>
+    </div>
+
+    <form method="POST">
+        <div class="details">
+          <div>التاريخ: <input type="date" name="voucher_date" value="{{ today }}"></div>
+          <div>رقم الإشاري: <input type="text" name="ref_no" placeholder="رقم الإشاري"></div>
+          <div>جهة التسليم: <input type="text" name="sender_name" placeholder="اسم المسلم"></div>
+          <div>جهة الاستلام: <input type="text" name="receiver_name" placeholder="اسم المستلم"></div>
+        </div>
+
+        <table id="handoverTable">
+          <thead>
+            <tr>
+              <th style="width: 40px;">م</th>
+              <th>اسم الصنف / البيان</th>
+              <th style="width: 100px;">الوحدة</th>
+              <th style="width: 100px;">الكمية</th>
+              <th style="width: 150px;">ملاحظات</th>
+              <th class="no-print" style="width: 60px;">إجراء</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>
+                <select name="item_name[]">
+                  <option value="">-- اختر صنفاً --</option>
+                  {% for item in items %}
+                  <option value="{{ item.name }}">{{ item.name }} ({{ item.unit }})</option>
+                  {% endfor %}
+                </select>
+              </td>
+              <td><input type="text" name="unit[]" placeholder="الوحدة"></td>
+              <td><input type="number" name="qty[]" value="1" min="1"></td>
+              <td><input type="text" name="notes[]" placeholder="ملاحظات"></td>
+              <td class="no-print"><button type="button" onclick="removeRow(this)" style="color:red; background:none; border:none; cursor:pointer; font-weight:bold;">حذف</button></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="no-print" style="margin-top: 10px;">
+            <button type="button" onclick="addRow()" style="padding: 6px 15px; background: #2980b9; color: white; border: none; border-radius: 4px; cursor: pointer;">+ إضافة صنف جديد</button>
+        </div>
+
+        <!-- التوقيعات -->
+        <div class="signatures">
+          <div class="sig-box"><p>الطرف المسلم</p><div class="sig-line"></div></div>
+          <div class="sig-box"><p>الطرف المستلم</p><div class="sig-line"></div></div>
+          <div class="sig-box"><p>الاعتماد / الإدارة</p><div class="sig-line"></div></div>
+        </div>
+
+        <div class="no-print" style="text-align: center; margin-top: 20px;">
+            <button type="submit" style="padding: 8px 20px; background: #27ae60; color: white; border: none; border-radius: 5px; font-size: 15px; cursor: pointer;">💾 حفظ المحضر</button>
+        </div>
+    </form>
+  </div>
+
+  <script>
+    function addRow() {
+        let table = document.getElementById("handoverTable").getElementsByTagName('tbody')[0];
+        let rowCount = table.rows.length + 1;
+        let newRow = table.insertRow();
+        
+        newRow.innerHTML = `
+            <td>${rowCount}</td>
+            <td>
+                <select name="item_name[]">
+                    <option value="">-- اختر صنفاً --</option>
+                    {% for item in items %}
+                    <option value="{{ item.name }}">{{ item.name }} ({{ item.unit }})</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td><input type="text" name="unit[]" placeholder="الوحدة"></td>
+            <td><input type="number" name="qty[]" value="1" min="1"></td>
+            <td><input type="text" name="notes[]" placeholder="ملاحظات"></td>
+            <td class="no-print"><button type="button" onclick="removeRow(this)" style="color:red; background:none; border:none; cursor:pointer; font-weight:bold;">حذف</button></td>
+        `;
+    }
+
+    function removeRow(btn) {
+        let row = btn.closest('tr');
+        row.remove();
+        updateRowNumbers();
+    }
+
+    function updateRowNumbers() {
+        let rows = document.querySelectorAll("#handoverTable tbody tr");
+        rows.forEach((row, index) => {
+            row.cells[0].innerText = index + 1;
+        });
+    }
+  </script>
+</body>
+</html>

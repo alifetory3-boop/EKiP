@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>طباعة الأصناف - {{ category }}</title>
+  <style>
+    body { font-family: Tahoma, sans-serif; padding: 20px; background: #fff; color: #000; }
+    .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+    
+    .header img { max-width: 200px; height: auto; margin-bottom: 10px; }
+    
+    .header h2 { margin: 5px 0; font-size: 22px; }
+    .header p { margin: 2px 0; font-size: 14px; color: #555; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #000; padding: 8px; text-align: center; font-size: 14px; }
+    th { background: #f0f0f0; font-weight: bold; }
+    @media print { .no-print { display: none; } body { padding: 0; } }
+  </style>
+</head>
+<body>
+  <div class="no-print" style="text-align: center; margin-bottom: 20px;">
+    <button onclick="window.print()" style="padding: 10px 30px; background: #27ae60; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer;">🖨️ طباعة / حفظ PDF</button>
+  </div>
+
+  <div class="header">
+    <img src="{{ url_for('static', filename='logo.png.jpeg') }}" alt="شعار الشركة">
+    
+    <!-- عرض اسم القسم المطبوع -->
+    <h2>
+      قائمة الأصناف 
+      {% if category != 'الكل' %} - قسم {{ category }}{% endif %}
+    </h2>
+    <p>تاريخ الطباعة: {{ now.strftime('%Y-%m-%d') }}</p>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>م</th><th>الكود</th><th>اسم الصنف</th><th>الوحدة</th><th>القسم</th><th>الحد الأدنى</th></tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ item.code }}</td>
+        <td>{{ item.name }}</td>
+        <td>{{ item.unit }}</td>
+        <td>{{ item.category }}</td>
+        <td>{{ item.min_qty | int }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6">لا توجد أصناف في هذا القسم.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>
