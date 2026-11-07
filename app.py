@@ -213,9 +213,7 @@ def salaries():
                 return redirect(url_for('salaries'))
 
             else:
-                # --- رصد وحفظ الراتب الجديد واستخراج معرف السجل (ID) لفتح الإيصال تلقائياً ---
                 employee_id = request.form.get('employee_id')
-                
                 emp_record = conn.execute("SELECT name FROM employees WHERE id=?", (employee_id,)).fetchone()
                 employee_name = emp_record['name'] if emp_record else request.form.get('employee_name', 'مجهول')
                 
@@ -232,12 +230,11 @@ def salaries():
                     (employee_name, basic_salary, deductions, bonuses, advance, bonus_receipt_type, month_year)
                 )
                 conn.commit()
-                new_salary_id = cur.lastrowid # الحصول على معرف الإيصال الجديد فوراً
+                new_salary_id = cur.lastrowid
                 
                 log_activity("رصد راتب ومستحقات", f"تم تسجيل مستحقات الموظف: {employee_name} عن تاريخ {month_year}")
                 conn.close()
 
-                # التوجيه الذكي لفتح صفحة الطباعة المناسبة في نافذة جديدة بناءً على نوع الإيصال
                 if bonus_receipt_type == 'bonus':
                     return redirect(url_for('print_bonus_receipt', id=new_salary_id))
                 elif bonus_receipt_type == 'advance':
@@ -633,30 +630,6 @@ def inventory():
         data.append({'code': item['code'], 'name': item['name'], 'unit': item['unit'], 'category': item['category'], 'in_qty': in_qty, 'out_qty': out_qty, 'balance': in_qty - out_qty})
     conn.close()
     return render_template('inventory.html', inventory_data=data, to_date=to_date)
-
-@app.route('/equipment_out', methods=['GET', 'POST'])
-@login_required(roles=['storekeeper'])
-def equipment_out():
-    conn = get_db()
-    if request.method == 'POST':
-        voucher_no = f"EQ-OUT-{date.today().strftime('%Y%m%d%H%M%S')}-{random.randint(1000, 9999)}"
-        cur = conn.cursor()
-        cur.execute("INSERT INTO equipment_vouchers (voucher_no, voucher_date, department, created_by) VALUES (?,?,?,?)", 
-                    (voucher_no, request.form['voucher_date'], request.form.get('department', 'عام'), session['user_id']))
-        vid = cur.lastrowid
-        item_names, qtys = request.form.getlist('item_name[]'), request.form.getlist('qty[]')
-        for i in range(len(item_names)):
-            if item_names[i] and float(qtys[i]) > 0:
-                item = cur.execute("SELECT id FROM items WHERE name=?", (item_names[i],)).fetchone()
-                item_id = item['id'] if item else cur.execute("INSERT INTO items (code, name, unit, category) VALUES (?, ?, ?, ?)", (f"GEN-{random.randint(1000,9999)}", item_names[i], 'حبة', 'عام')).lastrowid
-                cur.execute("INSERT INTO equipment_lines (voucher_id, item_id, qty) VALUES (?,?,?)", (vid, item_id, qtys[i]))
-        conn.commit()
-        log_activity("إذن معدات", f"تسجيل إذن معدات رقم {voucher_no}")
-        flash("تم تسجيل إذن المعدات بنجاح", "success")
-        conn.close()
-        return redirect(url_for('equipment_out'))
-    conn.close()
-    return render_template('equipment_out.html', today=date.today().isoformat())
 
 if __name__ == '__main__':
     app.run(debug=True)
