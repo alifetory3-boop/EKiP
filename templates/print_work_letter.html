@@ -24,7 +24,7 @@
             <p style="margin: 3px 0; font-size: 13px;">الشؤون الإدارية والموارد البشرية</p>
         </div>
         <div>
-            <img src="/static/logo.png" alt="شعار الشركة" style="max-height: 60px;" onerror="this.style.display='none'">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="شعار الشركة" style="max-height: 60px;" onerror="this.onerror=null; this.src='{{ url_for('static', filename='logo.png.jpeg') }}';">
         </div>
         <div style="text-align: left; font-size: 13px;">
             التاريخ: <input type="date" class="date-input" value="{{ now.strftime('%Y-%m-%d') }}">
@@ -34,7 +34,7 @@
     <div class="title">إفادة مباشرة عمل</div>
 
     <div class="content">
-        تشهد إدارة شركة أكيپ للإنشاءات بأن السيد / <b>{{ emp.name }}</b> قد باشر مهام عمله الفعلي بالشركة بوظيفته، و<b>باشر العمل من تاريخ</b> .............................، وتقرر منحـه راتباً أساسياً شهرياً وقدره <b>{{ "%.0f"|format(emp.default_salary) }} دينار ليبي</b> لا غير.<br><br>
+        تشهد إدارة شركة أكيپ للإنشاءات بأن السيد / <b>{{ emp.name }}</b> قد باشر مهام عمله الفعلي بالشركة بوظيفته، و<b>باشر العمل من تاريخ</b> ..............................<br><br>
         وقد أعطيت له هذه الإفادة بناءً على طلبه ودون أدنى مسؤولية على الشركة تجاه حقوق الغير المالية خارج نطاق العمل الرسمي.
     </div>
 
