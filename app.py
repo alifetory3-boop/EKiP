@@ -139,11 +139,16 @@ def dashboard():
     conn.close()
     return render_template('dashboard.html', items_count=items_count, balances=balances, low_stock=[b for b in balances if b['balance'] < b['min_qty']])
 
-# توجيه آمن لمنع حدوث خطأ 500 في لوحة التحكم
+# توجيهات آمنة لروابط لوحة التحكم المفقودة لعدم حدوث أي خطأ
 @app.route('/equipment_out')
 @login_required()
 def equipment_out():
     return redirect(url_for('issue'))
+
+@app.route('/archive')
+@login_required()
+def archive():
+    return redirect(url_for('dashboard'))
 
 @app.route('/users_management', methods=['GET', 'POST'])
 @login_required(roles=['admin'])
