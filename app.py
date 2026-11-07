@@ -139,6 +139,12 @@ def dashboard():
     conn.close()
     return render_template('dashboard.html', items_count=items_count, balances=balances, low_stock=[b for b in balances if b['balance'] < b['min_qty']])
 
+# حل مشكلة الرابط المفقود نهائياً لضمان عدم حدوث أي خطأ في لوحة التحكم
+@app.route('/equipment_out')
+@login_required()
+def equipment_out():
+    return redirect(url_for('issue'))
+
 @app.route('/users_management', methods=['GET', 'POST'])
 @login_required(roles=['admin'])
 def users_management():
@@ -173,9 +179,9 @@ def users_management():
     conn.close()
     return render_template('users.html', users=users_list, logs=logs)
 
-# ==================== قسم إدارة الرواتب والموظفين والمستحقات ====================
+# ==================== قسم إدارة الرواتب والموظفين والمستحقات (محمي وثابت) ====================
 
-@app.route('/salaries', methods=['GET', 'POST'])
+@app.route('/salaries', methods=['GET', 'POST'], endpoint='salaries')
 @login_required(roles=['accountant'])
 def salaries():
     conn = get_db()
