@@ -190,9 +190,14 @@
         </div>
     </div>
 
-    <!-- إدارة قائمة الموظفين (إضافة، تعديل، حذف) -->
+    <!-- إدارة قائمة الموظفين (إضافة، تعديل، حذف، طباعة) -->
     <div class="section-box">
-        <h3><i class="fa-solid fa-users-gear"></i> إدارة الموظفين والرواتب الأساسية</h3>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h3 style="margin: 0;"><i class="fa-solid fa-users-gear"></i> إدارة الموظفين والرواتب الأساسية</h3>
+            <a href="{{ url_for('print_employees_list') }}" target="_blank" class="btn" style="background: #2980b9; width: auto; padding: 5px 12px; font-size: 11px;">
+                <i class="fa-solid fa-print"></i> طباعة كشف الموظفين
+            </a>
+        </div>
         
         <form method="POST" style="margin-bottom: 10px; background: rgba(0,0,0,0.15); padding: 8px; border-radius: 5px;">
             <input type="hidden" name="action" value="add_employee">
@@ -224,12 +229,6 @@
                                     <div style="display: flex; gap: 4px; justify-content: center;">
                                         <button type="submit" class="icon-btn" title="حفظ التعديل"><i class="fa-solid fa-floppy-disk"></i></button>
                                 </form>
-                                    <form method="POST" style="display:inline;" onsubmit="return confirm('هل تريد حذف هذا الموظف؟')">
-                                        <input type="hidden" name="action" value="update_employee">
-                                        <input type="hidden" name="emp_id" value="{{ emp.id }}">
-                                        <input type="hidden" name="name" value="{{ emp.name }}">
-                                        <input type="hidden" name="default_salary" value="{{ emp.default_salary }}">
-                                    </form>
                                     <form method="POST" style="display:inline;" onsubmit="return confirm('هل تريد حذف هذا الموظف نهائياً؟')">
                                         <input type="hidden" name="action" value="delete_employee">
                                         <input type="hidden" name="emp_id" value="{{ emp.id }}">
