@@ -2,100 +2,67 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>كشف أسماء الموظفين والرواتب الأساسية - شركة أكيپ للإنشاءات</title>
+    <title>كشف الرواتب</title>
     <style>
         @page { size: A5; margin: 6mm; }
-        body { font-family: 'Traditional Arabic', 'Tahoma', sans-serif; background: #fff; color: #000; margin: 0; padding: 0; direction: rtl; }
-        .voucher-container { border: 1.5px solid #000; padding: 10px; border-radius: 6px; max-width: 100%; background: #fff; }
-        
-        /* ترويسة الشركة الرسمية المعتمدة */
-        .letterhead { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 8px; }
-        .letterhead-right { display: flex; align-items: center; gap: 8px; }
-        .letterhead-right img { height: 35px; }
-        .company-titles h1 { font-size: 13px; margin: 0; font-weight: bold; }
-        .company-titles h2 { font-size: 10px; margin: 2px 0 0 0; color: #333; }
-        .letterhead-left img { height: 35px; }
-
-        .doc-title { text-align: center; font-size: 12px; font-weight: bold; margin: 5px 0 8px 0; background: #f2f2f2; padding: 3px; border: 1px solid #000; }
-
-        table { width: 100%; border-collapse: collapse; margin-top: 5px; font-size: 10px; }
+        body { font-family: 'Tahoma', sans-serif; margin: 0; padding: 0; direction: rtl; }
+        .box { border: 1.5px solid #000; padding: 10px; border-radius: 6px; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 8px; }
+        .header img { height: 38px; }
+        .title { text-align: center; font-size: 12px; font-weight: bold; background: #f2f2f2; padding: 4px; border: 1px solid #000; margin-bottom: 8px; }
+        table { width: 100%; border-collapse: collapse; font-size: 10px; }
         th, td { border: 1px solid #000; padding: 3px 5px; text-align: center; }
-        th { background: #f2f2f2; font-weight: bold; }
-        td.name-col { text-align: right; padding-right: 6px; }
-        .total-row { font-weight: bold; background: #f9f9f9; }
-
-        .signatures { display: flex; justify-content: space-between; margin-top: 15px; text-align: center; font-size: 10px; }
-        .sig-box { width: 40%; border-top: 1px solid #000; padding-top: 3px; }
-        
-        .print-btn { text-align: center; margin-top: 10px; }
-        .print-btn button { background: #2980b9; color: white; border: none; padding: 5px 12px; font-size: 11px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        @media print { .print-btn { display: none; } body { padding: 0; } .voucher-container { border: none; } }
+        th { background: #f2f2f2; }
+        .name { text-align: right; padding-right: 6px; }
+        .sigs { display: flex; justify-content: space-between; margin-top: 15px; font-size: 10px; text-align: center; }
+        .sig { width: 40%; border-top: 1px solid #000; padding-top: 3px; }
+        .btn { text-align: center; margin-top: 10px; }
+        .btn button { background: #2980b9; color: #fff; border: none; padding: 5px 12px; font-weight: bold; cursor: pointer; border-radius: 4px; }
+        @media print { .btn { display: none; } .box { border: none; } }
     </style>
 </head>
 <body>
-
-    <div class="voucher-container">
-        <!-- ترويسة الشركة مطابقة للصورة -->
-        <div class="letterhead">
-            <div class="letterhead-right">
-                <div class="company-titles">
-                    <h1>EKIP</h1>
-                    <h2>شركة أكيپ للإنشاءات</h2>
-                </div>
-            </div>
-            <div class="letterhead-left">
-                <h2 style="font-size: 9px; margin: 0; text-align: left;">الجهاز الوطني للتنمية</h2>
-            </div>
+    <div class="box">
+        <div class="header">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="الشعار">
+            <h2 style="font-size: 10px; margin: 0;">الجهاز الوطني للتنمية</h2>
         </div>
 
-        <div class="doc-title">كشف أسماء الموظفين والرواتب الأساسية</div>
+        <div class="title">كشف أسماء الموظفين والرواتب الأساسية</div>
 
         <table>
-            <thead>
+            <tr>
+                <th style="width: 8%;">م</th>
+                <th>اسم الموظف الكامل</th>
+                <th style="width: 25%;">الراتب الأساسي</th>
+            </tr>
+            {% if employees %}
+                {% set total = namespace(val=0) %}
+                {% for emp in employees %}
+                {% set total.val = total.val + emp.default_salary %}
                 <tr>
-                    <th style="width: 8%;">م</th>
-                    <th>اسم الموظف الكامل</th>
-                    <th style="width: 25%;">الراتب الأساسي</th>
+                    <td>{{ loop.index }}</td>
+                    <td class="name">{{ emp.name }}</td>
+                    <td>{{ emp.default_salary|int }} د.ل</td>
                 </tr>
-            </thead>
-            <tbody>
-                {% if employees %}
-                    {% set total_salaries = namespace(val=0) %}
-                    {% for emp in employees %}
-                    {% set total_salaries.val = total_salaries.val + emp.default_salary %}
-                    <tr>
-                        <td>{{ loop.index }}</td>
-                        <td class="name-col">{{ emp.name }}</td>
-                        <td>{{ emp.default_salary|int }} د.ل</td>
-                    </tr>
-                    {% endfor %}
-                    <tr class="total-row">
-                        <td colspan="2" style="text-align: left; padding-left: 8px;">الإجمالي العام</td>
-                        <td>{{ total_salaries.val|int }} د.ل</td>
-                    </tr>
-                {% else %}
-                    <tr><td colspan="3">لا توجد أسماء مسجلة</td></tr>
-                {% endif %}
-            </tbody>
+                {% endfor %}
+                <tr style="font-weight: bold; background: #f9f9f9;">
+                    <td colspan="2" style="text-align: left; padding-left: 8px;">الإجمالي العام</td>
+                    <td>{{ total.val|int }} د.ل</td>
+                </tr>
+            {% else %}
+                <tr><td colspan="3">لا توجد أسماء مسجلة</td></tr>
+            {% endif %}
         </table>
 
-        <div class="signatures">
-            <div class="sig-box">
-                <p>المسئول المالي</p>
-                <br>
-                <p>........................</p>
-            </div>
-            <div class="sig-box">
-                <p>مدير المشروع</p>
-                <br>
-                <p>........................</p>
-            </div>
+        <div class="sigs">
+            <div class="sig">المسئول المالي<br><br>........................</div>
+            <div class="sig">مدير المشروع<br><br>........................</div>
         </div>
     </div>
 
-    <div class="print-btn">
+    <div class="btn">
         <button onclick="window.print()">طباعة الكشف (A5)</button>
     </div>
-
 </body>
 </html>
