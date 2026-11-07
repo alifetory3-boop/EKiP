@@ -14,7 +14,7 @@
         .form-group label { display: block; font-size: 12px; margin-bottom: 5px; color: #cbd5e1; font-weight: bold; }
         .form-group input, .form-group select { width: 100%; padding: 7px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 12px; color: #000; box-sizing: border-box; }
         
-        /* تنسيق خط محرك البحث Select2 ليكون أسود ونفس حجم ونمط إيصال الصرف */
+        /* تنسيق خط محرك البحث Select2 ليكون أسود وبنفس حجم ونمط إيصال الصرف */
         .select2-container { width: 100% !important; }
         .select2-container .select2-selection--single { height: 32px !important; background: #f8fafc !important; border: 1px solid #cbd5e1 !important; border-radius: 4px !important; }
         .select2-container--default .select2-selection--single .select2-selection__rendered { line-height: 30px !important; color: #000 !important; font-family: 'Traditional Arabic', 'Tahoma', sans-serif !important; font-size: 13px !important; font-weight: bold !important; }
@@ -39,7 +39,7 @@
         <div class="panel-title">📌 رصد وصرف راتب ومستحقات</div>
         <form action="/save_salary" method="POST">
             <div class="form-grid">
-                <!-- قائمة البحث السريع للموظف بخط أسود ومتطابق -->
+                <!-- قائمة البحث السريع للموظف -->
                 <div class="form-group">
                     <label>اختر الموظف (بحث سريع)</label>
                     <select id="employeeSelect" name="employee_id" required>
@@ -50,6 +50,7 @@
                     </select>
                 </div>
 
+                <!-- خانة الراتب الأساسي التلقائية -->
                 <div class="form-group">
                     <label>الراتب الأساسي</label>
                     <input type="number" id="basicSalary" name="basic_salary" value="0" readonly>
@@ -140,7 +141,7 @@
                 allowClear: true
             });
 
-            // سحب الراتب الأساسي تلقائياً فور اختيار الموظف (مدعوم بـ select2:select)
+            // جلب وعرض الراتب الأساسي تلقائياً فور اختيار الموظف
             $('#employeeSelect').on('change select2:select', function() {
                 var selectedOption = $(this).find(':selected');
                 var basicSalary = selectedOption.attr('data-basic') || 0;
