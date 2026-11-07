@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS user_activity_log (
 )
 """)
 
-# جدول الرواتب والمستحقات المطور
+# جدول الرواتب والمستحقات المطور ليدعم (الأساسي، الخصومات، المكافآت، السلف، ونوع إيصال المكافأة)
 conn.execute("""
 CREATE TABLE IF NOT EXISTS advanced_salaries (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -163,7 +163,7 @@ def users_management():
     conn.close()
     return render_template('users.html', users=users_list, logs=logs)
 
-# ==================== قسم إدارة الرواتب والموظفين والمستحقات ====================
+# ==================== قسم إدارة الرواتب والموظفين والمستحقات (محدث بالكامل) ====================
 
 @app.route('/salaries', methods=['GET', 'POST'])
 @login_required(roles=['accountant'])
@@ -215,6 +215,7 @@ def salaries():
         conn.close()
         return redirect(url_for('salaries'))
     
+    # جلب قائمة الموظفين وسجلات الرواتب لتمريرها للقالب
     employees = conn.execute("SELECT * FROM employees ORDER BY name").fetchall()
     salaries = conn.execute("SELECT * FROM advanced_salaries ORDER BY id DESC").fetchall()
     conn.close()
