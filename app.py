@@ -225,7 +225,6 @@ def salaries():
         conn.close()
         return redirect(url_for('salaries'))
     
-    # جلب قائمة الموظفين وسجلات الرواتب وتمريرها للواجهة
     employees = conn.execute("SELECT * FROM employees ORDER BY name").fetchall()
     salaries = conn.execute("SELECT * FROM advanced_salaries ORDER BY id DESC").fetchall()
     conn.close()
@@ -292,6 +291,14 @@ def print_advance_receipt(id):
     salary = conn.execute("SELECT * FROM advanced_salaries WHERE id=?", (id,)).fetchone()
     conn.close()
     return render_template('print_advance.html', salary=salary)
+
+@app.route('/salaries/print/employees_list')
+@login_required(roles=['accountant'])
+def print_employees_list():
+    conn = get_db()
+    employees = conn.execute("SELECT * FROM employees ORDER BY name").fetchall()
+    conn.close()
+    return render_template('print_employees_list.html', employees=employees)
 
 # ==================================================================================
 
