@@ -39,7 +39,7 @@
         <div class="panel-title">📌 رصد وصرف راتب ومستحقات</div>
         <form action="/save_salary" method="POST">
             <div class="form-grid">
-                <!-- قائمة البحث السريع للموظف بخط أسود ومتطابق مع الإيصال -->
+                <!-- قائمة البحث السريع للموظف بخط أسود ومتطابق -->
                 <div class="form-group">
                     <label>اختر الموظف (بحث سريع)</label>
                     <select id="employeeSelect" name="employee_id" required>
@@ -79,7 +79,7 @@
                     </select>
                 </div>
 
-                <!-- خانة التاريخ المحدثة (اليوم / الشهر / السنة) -->
+                <!-- خانة التاريخ الشاملة (اليوم / الشهر / السنة) -->
                 <div class="form-group">
                     <label>التاريخ (يوم / شهر / سنة)</label>
                     <input type="date" id="salaryFullDate" name="salary_date" required>
@@ -140,11 +140,11 @@
                 allowClear: true
             });
 
-            // جلب الراتب الأساسي تلقائياً عند اختيار الموظف
-            $('#employeeSelect').on('change', function() {
-                var selected = $(this).find(':selected');
-                var basic = selected.data('basic') || 0;
-                $('#basicSalary').val(basic);
+            // سحب الراتب الأساسي تلقائياً فور اختيار الموظف (مدعوم بـ select2:select)
+            $('#employeeSelect').on('change select2:select', function() {
+                var selectedOption = $(this).find(':selected');
+                var basicSalary = selectedOption.attr('data-basic') || 0;
+                $('#basicSalary').val(basicSalary);
             });
 
             // تحديد تاريخ اليوم تلقائياً بصيغة يوم/شهر/سنة
