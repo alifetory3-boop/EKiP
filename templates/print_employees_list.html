@@ -4,34 +4,44 @@
     <meta charset="UTF-8">
     <title>كشف أسماء الموظفين والرواتب الأساسية</title>
     <style>
-        @page { size: A5; margin: 8mm; }
-        body { font-family: 'Traditional Arabic', 'Tahoma', sans-serif; background: #fff; color: #000; margin: 0; padding: 5px; direction: rtl; }
-        .voucher-container { border: 2px solid #000; padding: 12px; border-radius: 6px; max-width: 100%; background: #fff; }
-        .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 6px; margin-bottom: 10px; }
-        .header h2 { font-size: 15px; margin: 0 0 2px 0; }
-        .header h3 { font-size: 11px; margin: 0; }
+        @page { size: A5; margin: 6mm; }
+        body { font-family: 'Traditional Arabic', 'Tahoma', sans-serif; background: #fff; color: #000; margin: 0; padding: 0; direction: rtl; }
+        .voucher-container { border: 1.5px solid #000; padding: 10px; border-radius: 6px; max-width: 100%; background: #fff; }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 5px; font-size: 11px; }
-        th, td { border: 1px solid #000; padding: 4px 6px; text-align: center; }
+        .letterhead { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 6px; margin-bottom: 8px; }
+        .letterhead-right img { height: 38px; width: auto; }
+        .letterhead-left h2 { font-size: 10px; margin: 0; font-weight: bold; color: #333; }
+
+        .doc-title { text-align: center; font-size: 12px; font-weight: bold; margin: 5px 0 8px 0; background: #f2f2f2; padding: 4px; border: 1px solid #000; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 5px; font-size: 10px; }
+        th, td { border: 1px solid #000; padding: 3px 5px; text-align: center; }
         th { background: #f2f2f2; font-weight: bold; }
-        td.name-col { text-align: right; padding-right: 8px; }
+        td.name-col { text-align: right; padding-right: 6px; }
         .total-row { font-weight: bold; background: #f9f9f9; }
 
-        .signatures { display: flex; justify-content: space-between; margin-top: 20px; text-align: center; font-size: 11px; }
-        .sig-box { width: 40%; border-top: 1px solid #000; padding-top: 4px; }
+        .signatures { display: flex; justify-content: space-between; margin-top: 15px; text-align: center; font-size: 10px; }
+        .sig-box { width: 40%; border-top: 1px solid #000; padding-top: 3px; }
         
-        .print-btn { text-align: center; margin-top: 15px; }
-        .print-btn button { background: #2980b9; color: white; border: none; padding: 6px 15px; font-size: 12px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .print-btn { text-align: center; margin-top: 10px; }
+        .print-btn button { background: #2980b9; color: white; border: none; padding: 5px 12px; font-size: 11px; border-radius: 4px; cursor: pointer; font-weight: bold; }
         @media print { .print-btn { display: none; } body { padding: 0; } .voucher-container { border: none; } }
     </style>
 </head>
 <body>
 
     <div class="voucher-container">
-        <div class="header">
-            <h2>مشروع مركب رياضي بالمرج</h2>
-            <h3>كشف أسماء الموظفين والرواتب الأساسية</h3>
+        <!-- ترويسة الشركة بالشعار الرسمي الصحيح -->
+        <div class="letterhead">
+            <div class="letterhead-right">
+                <img src="{{ url_for('static', filename='logo.png.jpeg') }}" alt="شعار شركة أكيپ للإنشاءات">
+            </div>
+            <div class="letterhead-left">
+                <h2>الجهاز الوطني للتنمية</h2>
+            </div>
         </div>
+
+        <div class="doc-title">كشف أسماء الموظفين والرواتب الأساسية</div>
 
         <table>
             <thead>
@@ -53,7 +63,7 @@
                     </tr>
                     {% endfor %}
                     <tr class="total-row">
-                        <td colspan="2" style="text-align: left; padding-left: 10px;">الإجمالي العام</td>
+                        <td colspan="2" style="text-align: left; padding-left: 8px;">الإجمالي العام</td>
                         <td>{{ total_salaries.val|int }} د.ل</td>
                     </tr>
                 {% else %}
