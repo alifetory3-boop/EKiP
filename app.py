@@ -40,6 +40,15 @@ CREATE TABLE IF NOT EXISTS advanced_salaries (
     month_year TEXT NOT NULL
 )
 """)
+
+# التأكد من إنشاء جدول الموظفين إذا لم يكن موجوداً
+conn.execute("""
+CREATE TABLE IF NOT EXISTS employees (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    default_salary REAL DEFAULT 0.0
+)
+""")
 conn.commit()
 
 def log_activity(action, details=""):
@@ -61,6 +70,7 @@ if conn.execute("SELECT COUNT(*) FROM users").fetchone()[0] == 0:
                  ('admin', generate_password_hash('admin123'), 'مدير النظام', 'admin'))
     conn.commit()
 
+# إدخال الموظفين تلقائياً إذا كان الجدول فارغاً
 if conn.execute("SELECT COUNT(*) FROM employees").fetchone()[0] == 0:
     initial_employees = [
         ("ابراهيم محمد ابراهيم", 1500), ("احمد صلاح موسي", 3000), ("اسماعيل يونس محمد ادم", 2500),
@@ -163,7 +173,7 @@ def users_management():
     conn.close()
     return render_template('users.html', users=users_list, logs=logs)
 
-# ==================== قسم إدارة الرواتب والموظفين والمستحقات (محدث بالكامل) ====================
+# ==================== قسم إدارة الرواتب والموظفين والمستحقات ====================
 
 @app.route('/salaries', methods=['GET', 'POST'])
 @login_required(roles=['accountant'])
@@ -215,7 +225,7 @@ def salaries():
         conn.close()
         return redirect(url_for('salaries'))
     
-    # جلب قائمة الموظفين وسجلات الرواتب لتمريرها للقالب
+    # جلب قائمة الموظفين وسجلات الرواتب وتمريرها للواجهة
     employees = conn.execute("SELECT * FROM employees ORDER BY name").fetchall()
     salaries = conn.execute("SELECT * FROM advanced_salaries ORDER BY id DESC").fetchall()
     conn.close()
