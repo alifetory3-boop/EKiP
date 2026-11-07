@@ -7,34 +7,50 @@
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <style>
         body { font-family: 'Traditional Arabic', 'Tahoma', sans-serif; background-color: #0f172a; color: #fff; padding: 15px; direction: rtl; }
-        .panel-box { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-        .panel-title { font-size: 15px; font-weight: bold; color: #38bdf8; margin-bottom: 12px; border-bottom: 1px solid #334155; padding-bottom: 8px; }
+        .panel-box { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        .panel-title { font-size: 15px; font-weight: bold; color: #38bdf8; margin-bottom: 10px; border-bottom: 1px solid #334155; padding-bottom: 6px; }
         
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; align-items: end; }
-        .form-group label { display: block; font-size: 12px; margin-bottom: 5px; color: #cbd5e1; font-weight: bold; }
-        .form-group input, .form-group select { width: 100%; padding: 7px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 12px; color: #000; box-sizing: border-box; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; align-items: end; }
+        .form-group label { display: block; font-size: 12px; margin-bottom: 4px; color: #cbd5e1; font-weight: bold; }
+        .form-group input, .form-group select { width: 100%; padding: 6px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 12px; color: #000; box-sizing: border-box; }
         
         /* تنسيق خط محرك البحث Select2 ليكون أسود وبنفس حجم ونمط إيصال الصرف */
         .select2-container { width: 100% !important; }
-        .select2-container .select2-selection--single { height: 32px !important; background: #f8fafc !important; border: 1px solid #cbd5e1 !important; border-radius: 4px !important; }
-        .select2-container--default .select2-selection--single .select2-selection__rendered { line-height: 30px !important; color: #000 !important; font-family: 'Traditional Arabic', 'Tahoma', sans-serif !important; font-size: 13px !important; font-weight: bold !important; }
+        .select2-container .select2-selection--single { height: 30px !important; background: #f8fafc !important; border: 1px solid #cbd5e1 !important; border-radius: 4px !important; }
+        .select2-container--default .select2-selection--single .select2-selection__rendered { line-height: 28px !important; color: #000 !important; font-family: 'Traditional Arabic', 'Tahoma', sans-serif !important; font-size: 13px !important; font-weight: bold !important; }
         .select2-results__option { font-family: 'Traditional Arabic', 'Tahoma', sans-serif !important; color: #000 !important; font-size: 12px !important; }
 
-        .btn-action { background: #10b981; color: white; border: none; padding: 8px 15px; font-size: 13px; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; }
+        .btn-action { background: #10b981; color: white; border: none; padding: 7px 12px; font-size: 12px; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; }
         .btn-action:hover { background: #059669; }
 
-        .btn-excel { background: #047857; color: white; border: none; padding: 8px 15px; font-size: 13px; font-weight: bold; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; margin-bottom: 10px; }
+        .btn-excel { background: #047857; color: white; border: none; padding: 6px 12px; font-size: 12px; font-weight: bold; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; }
         .btn-excel:hover { background: #065f46; }
 
-        .table-custom { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; background: #1e293b; }
-        .table-custom th, .table-custom td { border: 1px solid #334155; padding: 8px; text-align: center; }
-        .table-custom th { background: #0ea5e9; color: #fff; }
-        .btn-delete { background: #ef4444; color: white; border: none; padding: 4px 10px; border-radius: 3px; cursor: pointer; font-size: 11px; }
+        /* حاوية الجدول المدمجة لمنع أخذ مساحة كبيرة في الشاشة */
+        .table-container { max-height: 220px; overflow-y: auto; margin-top: 8px; border: 1px solid #334155; border-radius: 4px; }
+        .table-custom { width: 100%; border-collapse: collapse; font-size: 12px; background: #1e293b; }
+        .table-custom th, .table-custom td { border: 1px solid #334155; padding: 6px; text-align: center; }
+        .table-custom th { background: #0ea5e9; color: #fff; position: sticky; top: 0; z-index: 1; }
+        .btn-delete { background: #ef4444; color: white; border: none; padding: 3px 8px; border-radius: 3px; cursor: pointer; font-size: 11px; }
+
+        /* تنسيق رسائل التنبيه الفورية */
+        .alert { padding: 8px 12px; margin-bottom: 10px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .alert-success { background: #065f46; color: #d1fae5; border: 1px solid #047857; }
+        .alert-danger { background: #991b1b; color: #fee2e2; border: 1px solid #7f1d1d; }
     </style>
 </head>
 <body>
 
-    <!-- قسم رصد وصرف راتب ومستحقات (يرسل إلى /salaries ويفتح الإيصال بـ target="_blank") -->
+    <!-- عرض رسائل التنبيه المباشرة (Flash Messages) -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- قسم رصد وصرف راتب ومستحقات -->
     <div class="panel-box">
         <div class="panel-title">📌 رصد وصرف راتب ومستحقات</div>
         <form action="/salaries" method="POST" target="_blank">
@@ -93,46 +109,67 @@
         </form>
     </div>
 
-    <!-- قسم إدارة الموظفين والرواتب الأساسية -->
+    <!-- قسم إضافة موظف جديد بجهة وتصميم مدمج -->
+    <div class="panel-box">
+        <div class="panel-title">➕ إضافة موظف جديد للمنظومة</div>
+        <form action="/salaries" method="POST">
+            <input type="hidden" name="action" value="add_employee">
+            <div class="form-grid" style="grid-template-columns: 2fr 1fr 1fr;">
+                <div class="form-group">
+                    <label>اسم الموظف الرباعي</label>
+                    <input type="text" name="name" placeholder="أدخل اسم الموظف" required>
+                </div>
+                <div class="form-group">
+                    <label>الراتب الأساسي الافتراضي</label>
+                    <input type="number" name="default_salary" value="0" required>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn-action" style="background: #0284c7;">➕ إضافة الموظف</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- قسم إدارة الموظفين والرواتب الأساسية (بمساحة مدمجة وجدول قابل للتمرير) -->
     <div class="panel-box">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div class="panel-title" style="border: none; margin: 0;">👥 إدارة الموظفين والرواتب الأساسية</div>
-            <!-- زر تصدير كشف الموظفين إلى إكسل -->
+            <div class="panel-title" style="border: none; margin: 0;">👥 كشف الموظفين والرواتب الأساسية</div>
             <button onclick="exportToExcel()" class="btn-excel">📊 تصدير كشف الموظفين (Excel)</button>
         </div>
 
-        <table class="table-custom" id="employeesTable">
-            <thead>
-                <tr>
-                    <th style="width: 50px;">م</th>
-                    <th>اسم الموظف والراتب الأساسي</th>
-                    <th>الراتب الأساسي</th>
-                    <th style="width: 80px;">الإجراء</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for emp in employees %}
-                <tr>
-                    <td>{{ loop.index }}</td>
-                    <td>{{ emp.name }}</td>
-                    <td>{{ emp.default_salary }} د.ل</td>
-                    <td>
-                        <form action="/salaries" method="POST" style="display:inline;">
-                            <input type="hidden" name="action" value="delete_employee">
-                            <input type="hidden" name="emp_id" value="{{ emp.id }}">
-                            <button type="submit" class="btn-delete" onclick="return confirm('هل أنت متأكد من الحذف؟')">حذف</button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="table-container">
+            <table class="table-custom" id="employeesTable">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">م</th>
+                        <th>اسم الموظف</th>
+                        <th>الراتب الأساسي</th>
+                        <th style="width: 80px;">الإجراء</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for emp in employees %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ emp.name }}</td>
+                        <td>{{ emp.default_salary }} د.ل</td>
+                        <td>
+                            <form action="/salaries" method="POST" style="display:inline;">
+                                <input type="hidden" name="action" value="delete_employee">
+                                <input type="hidden" name="emp_id" value="{{ emp.id }}">
+                                <button type="submit" class="btn-delete" onclick="return confirm('هل أنت متأكد من الحذف؟')">حذف</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- مكتبات وسكربتات التشغيل والتنسيق -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <!-- مكتبة تصدير الإكسل SheetJS -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
     <script>
@@ -150,7 +187,7 @@
                 $('#basicSalary').val(basicSalary);
             });
 
-            // تحديد تاريخ اليوم تلقائياً بصيغة يوم/شهر/سنة
+            // تحديد تاريخ اليوم تلقائياً
             const today = new Date().toISOString().split('T')[0];
             $('#salaryFullDate').val(today);
         });
