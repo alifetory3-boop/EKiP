@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>إيصال صرف راتب</title>
+    <title>إيصال صرف راتب - {{ salary.employee_name }}</title>
     <style>
         @page { size: A5; margin: 8mm; }
         body { font-family: 'Traditional Arabic', 'Tahoma', sans-serif; background: #fff; color: #000; margin: 0; padding: 5px; direction: rtl; }
@@ -28,13 +28,25 @@
         </div>
 
         <div class="details">
-            <p>رقم الإيصال: <span>#SAL-{{ payment.id }}</span> &nbsp;&nbsp; التاريخ: <span>{{ payment.pay_date }}</span></p>
-            <p>أستلم أنا السيد / السيدة: <span>{{ payment.employee_name }}</span></p>
-            <p>مبلغ وقدره: <span>{{ payment.amount|int }} دينار ليبي</span> فقط لا غير.</p>
-            <p>عن مرتب: <span>شهر {{ payment.month }}</span></p>
-            {% if payment.deduction > 0 %}
-            <p style="color: #c0392b;">قيمة الخصم: <span>{{ payment.deduction|int }} د.ل ({{ payment.deduction_reason }})</span></p>
+            <p>رقم الإيصال: <span>#SAL-{{ salary.id }}</span> &nbsp;&nbsp; عن شهر/سنة: <span>{{ salary.month_year }}</span></p>
+            <p>أستلم أنا السيد / السيدة: <span>{{ salary.employee_name }}</span></p>
+            <p>الراتب الأساسي: <span>{{ salary.basic_salary|int }} دينار ليبي</span></p>
+            
+            {% if salary.deductions > 0 %}
+            <p style="color: #c0392b;">قيمة الخصومات: <span>- {{ salary.deductions|int }} د.ل</span></p>
             {% endif %}
+
+            {% if salary.bonuses > 0 and salary.bonus_receipt_type == 'with_salary' %}
+            <p style="color: #27ae60;">المكافآت المدمجة: <span>+ {{ salary.bonuses|int }} د.ل</span></p>
+            {% endif %}
+
+            {% if salary.advance > 0 %}
+            <p style="color: #e67e22;">السلفة المستقطعة: <span>- {{ salary.advance|int }} د.ل</span></p>
+            {% endif %}
+
+            <p style="font-weight: bold; font-size: 14px; margin-top: 8px; border-top: 1px solid #ccc; padding-top: 5px;">
+                صافي المبلغ المستحق الصافي: <span style="color: #2980b9;">{{ (salary.basic_salary - salary.deductions + (salary.bonuses if salary.bonus_receipt_type == 'with_salary' else 0) - salary.advance)|int }} دينار ليبي</span> فقط لا غير.
+            </p>
         </div>
 
         <div class="signatures">
@@ -46,7 +58,7 @@
             <div class="sig-box">
                 <p>توقيع الموظف</p>
                 <br>
-                <p><strong>{{ payment.employee_name }}</strong></p>
+                <p><strong>{{ salary.employee_name }}</strong></p>
             </div>
         </div>
     </div>
