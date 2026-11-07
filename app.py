@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS user_activity_log (
 )
 """)
 
-# جدول الرواتب والمستحقات الجديد والمطور ليدعم (الأساسي، الخصومات، المكافآت، السلف، ونوع إيصال المكافأة)
+# جدول الرواتب والمستحقات المطور
 conn.execute("""
 CREATE TABLE IF NOT EXISTS advanced_salaries (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -163,37 +163,62 @@ def users_management():
     conn.close()
     return render_template('users.html', users=users_list, logs=logs)
 
-# ==================== قسم إدارة الرواتب والخصومات والمكافآت والسلف (محدث) ====================
+# ==================== قسم إدارة الرواتب والموظفين والمستحقات ====================
 
 @app.route('/salaries', methods=['GET', 'POST'])
 @login_required(roles=['accountant'])
 def salaries():
     conn = get_db()
     if request.method == 'POST':
+        action = request.form.get('action')
         try:
-            employee_name = request.form.get('employee_name')
-            basic_salary = float(request.form.get('basic_salary', 0))
-            deductions = float(request.form.get('deductions', 0))
-            bonuses = float(request.form.get('bonuses', 0))
-            advance = float(request.form.get('advance', 0))
-            bonus_receipt_type = request.form.get('bonus_receipt_type', 'separate')
-            month_year = request.form.get('month_year')
+            if action == 'add_employee':
+                name = request.form.get('name')
+                default_salary = float(request.form.get('default_salary', 0))
+                conn.execute("INSERT INTO employees (name, default_salary) VALUES (?, ?)", (name, default_salary))
+                conn.commit()
+                log_activity("إضافة موظف", f"إضافة الموظف: {name}")
+                flash("تم إضافة الموظف بنجاح", "success")
+            elif action == 'update_employee':
+                emp_id = request.form.get('emp_id')
+                name = request.form.get('name')
+                default_salary = float(request.form.get('default_salary', 0))
+                conn.execute("UPDATE employees SET name=?, default_salary=? WHERE id=?", (name, default_salary, emp_id))
+                conn.commit()
+                log_activity("تعديل موظف", f"تعديل الموظف رقم {emp_id}")
+                flash("تم تعديل بيانات الموظف بنجاح", "success")
+            elif action == 'delete_employee':
+                emp_id = request.form.get('emp_id')
+                conn.execute("DELETE FROM employees WHERE id=?", (emp_id,))
+                conn.commit()
+                log_activity("حذف موظف", f"حذف الموظف رقم {emp_id}")
+                flash("تم حذف الموظف بنجاح", "success")
+            else:
+                employee_name = request.form.get('employee_name')
+                basic_salary = float(request.form.get('basic_salary', 0))
+                deductions = float(request.form.get('deductions', 0))
+                bonuses = float(request.form.get('bonuses', 0))
+                advance = float(request.form.get('advance', 0))
+                bonus_receipt_type = request.form.get('bonus_receipt_type', 'separate')
+                month_year = request.form.get('month_year')
 
-            conn.execute(
-                "INSERT INTO advanced_salaries (employee_name, basic_salary, deductions, bonuses, advance, bonus_receipt_type, month_year) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                (employee_name, basic_salary, deductions, bonuses, advance, bonus_receipt_type, month_year)
-            )
-            conn.commit()
-            log_activity("رصد راتب ومستحقات", f"تم تسجيل مستحقات الموظف: {employee_name} عن شهر {month_year}")
-            flash("تم حفظ السجل بنجاح", "success")
+                conn.execute(
+                    "INSERT INTO advanced_salaries (employee_name, basic_salary, deductions, bonuses, advance, bonus_receipt_type, month_year) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    (employee_name, basic_salary, deductions, bonuses, advance, bonus_receipt_type, month_year)
+                )
+                conn.commit()
+                log_activity("رصد راتب ومستحقات", f"تم تسجيل مستحقات الموظف: {employee_name} عن شهر {month_year}")
+                flash("تم حفظ السجل بنجاح", "success")
         except Exception as e:
             flash(f"حدث خطأ: {e}", "danger")
+        
         conn.close()
         return redirect(url_for('salaries'))
     
+    employees = conn.execute("SELECT * FROM employees ORDER BY name").fetchall()
     salaries = conn.execute("SELECT * FROM advanced_salaries ORDER BY id DESC").fetchall()
     conn.close()
-    return render_template('salaries.html', salaries=salaries)
+    return render_template('salaries.html', employees=employees, salaries=salaries)
 
 @app.route('/salaries/edit/<int:id>', methods=['GET', 'POST'])
 @login_required(roles=['accountant'])
@@ -233,7 +258,6 @@ def delete_salary(id):
     conn.close()
     return redirect(url_for('salaries'))
 
-# مسارات طباعة الإيصالات المستقلة (الراتب، المكافأة، والسلفة)
 @app.route('/salaries/print/salary/<int:id>')
 @login_required(roles=['accountant'])
 def print_salary_receipt(id):
