@@ -8,9 +8,9 @@
         body { font-family: 'Traditional Arabic', 'Tahoma', sans-serif; background: #fff; color: #000; margin: 0; padding: 5px; direction: rtl; }
         .voucher-container { border: 2px solid #000; padding: 12px; border-radius: 6px; max-width: 100%; background: #fff; }
         
-        .letterhead { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 6px; margin-bottom: 10px; }
-        .letterhead-right img { height: 38px; width: auto; }
-        .letterhead-left h2 { font-size: 11px; margin: 0; font-weight: bold; color: #333; }
+        /* ترويسة الشركة مع الشعار فقط */
+        .letterhead { display: flex; justify-content: center; align-items: center; border-bottom: 2px solid #000; padding-bottom: 6px; margin-bottom: 10px; }
+        .letterhead img { height: 42px; width: auto; }
 
         .doc-title { text-align: center; font-size: 13px; font-weight: bold; margin: 5px 0 10px 0; background: #f2f2f2; padding: 4px; border: 1px solid #000; }
 
@@ -29,14 +29,9 @@
 <body>
 
     <div class="voucher-container">
-        <!-- ترويسة الشركة بالشعار الرسمي الصحيح -->
+        <!-- ترويسة الشركة بالشعار فقط بدون الجهاز الوطني للتنمية -->
         <div class="letterhead">
-            <div class="letterhead-right">
-                <img src="{{ url_for('static', filename='logo.png.jpeg') }}" alt="شعار شركة أكيپ للإنشاءات">
-            </div>
-            <div class="letterhead-left">
-                <h2>الجهاز الوطني للتنمية</h2>
-            </div>
+            <img src="{{ url_for('static', filename='logo.png.jpeg') }}" alt="شعار شركة أكيپ للإنشاءات">
         </div>
 
         <div class="doc-title">إيصال صرف راتب ومستحقات</div>
