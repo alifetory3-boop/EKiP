@@ -29,11 +29,14 @@
         .btn-print { background: #2563eb; color: white; border: none; padding: 6px 12px; font-size: 12px; font-weight: bold; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; margin-right: 5px; }
         .btn-print:hover { background: #1d4ed8; }
 
-        .btn-letter { background: #d97706; color: white; border: none; padding: 3px 8px; border-radius: 3px; cursor: pointer; font-size: 11px; margin-left: 3px; text-decoration: none; display: inline-block; }
+        .btn-letter { background: #d97706; color: white; border: none; padding: 3px 8px; border-radius: 3px; cursor: pointer; font-size: 11px; margin-left: 2px; }
         .btn-letter:hover { background: #b45309; }
 
-        .btn-edit { background: #0284c7; color: white; border: none; padding: 3px 8px; border-radius: 3px; cursor: pointer; font-size: 11px; text-decoration: none; display: inline-block; margin-left: 3px; }
+        .btn-edit { background: #0284c7; color: white; border: none; padding: 3px 8px; border-radius: 3px; cursor: pointer; font-size: 11px; margin-left: 2px; }
         .btn-edit:hover { background: #0369a1; }
+
+        .btn-delete { background: #ef4444; color: white; border: none; padding: 3px 8px; border-radius: 3px; cursor: pointer; font-size: 11px; }
+        .btn-delete:hover { background: #dc2626; }
 
         /* حاوية الجدول المدمجة */
         .table-container { max-height: 220px; overflow-y: auto; margin-top: 8px; border: 1px solid #334155; border-radius: 4px; }
@@ -49,7 +52,7 @@
         /* تنسيق صفحة الطباعة */
         @media print {
             body { background: #fff !important; color: #000 !important; padding: 0 !important; }
-            .panel-box:not(#printSection), .alert, form, .btn-excel, .btn-print, .btn-letter, .btn-edit, header { display: none !important; }
+            .panel-box:not(#printSection), .alert, form, .btn-excel, .btn-print, .btn-letter, .btn-edit, .btn-delete, header { display: none !important; }
             #printSection { display: block !important; background: #fff !important; border: none !important; box-shadow: none !important; padding: 0 !important; }
             .table-container { max-height: none !important; overflow: visible !important; border: none !important; }
             .table-custom { background: #fff !important; color: #000 !important; }
@@ -167,7 +170,7 @@
                         <th style="width: 50px;">م</th>
                         <th>اسم العامل / الموظف</th>
                         <th>الراتب الأساسي</th>
-                        <th style="width: 180px;">الإجراء / المستندات</th>
+                        <th style="width: 220px;">الإجراء / المستندات</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -177,11 +180,18 @@
                         <td>{{ emp.name }}</td>
                         <td>{{ "%.0f"|format(emp.default_salary) }} د.ل</td>
                         <td>
-                            <!-- زر طباعة رسالة مباشرة العمل الآمن -->
-                            <button type="button" class="btn-letter" onclick="printWorkLetter(this)" data-name="{{ emp.name }}" data-salary="{{ "%.0f"|format(emp.default_salary) }}">📄 مباشرة عمل</button>
+                            <!-- زر طباعة رسالة مباشرة العمل -->
+                            <button type="button" class="btn-letter" onclick="printWorkLetter(this)" data-name="{{ emp.name }}" data-salary="{{ "%.0f"|format(emp.default_salary) }}">📄 مباشرة</button>
                             
-                            <!-- زر التعديل بدلاً من الحذف -->
+                            <!-- زر التعديل -->
                             <button type="button" class="btn-edit" onclick="openEditModal('{{ emp.id }}', '{{ emp.name }}', '{{ "%.0f"|format(emp.default_salary) }}')">✏️ تعديل</button>
+                            
+                            <!-- زر الحذف -->
+                            <form action="/salaries" method="POST" style="display:inline;">
+                                <input type="hidden" name="action" value="delete_employee">
+                                <input type="hidden" name="emp_id" value="{{ emp.id }}">
+                                <button type="submit" class="btn-delete" onclick="return confirm('هل أنت متأكد من حذف هذا العامل؟')">حذف</button>
+                            </form>
                         </td>
                     </tr>
                     {% endfor %}
@@ -190,7 +200,7 @@
         </div>
     </div>
 
-    <!-- نافذة منسدلة (Modal) بسيطة لتعديل بيانات الموظف مباشرة -->
+    <!-- نافذة تعديل بيانات الموظف -->
     <div id="editModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; justify-content:center; align-items:center;">
         <div style="background:#1e293b; padding:20px; border-radius:8px; width:400px; border:1px solid #334155;">
             <div style="font-size:15px; font-weight:bold; color:#38bdf8; margin-bottom:15px; border-bottom:1px solid #334155; padding-bottom:8px;">✏️ تعديل بيانات الموظف</div>
@@ -284,7 +294,7 @@
             window.print();
         }
 
-        // دالة آمنة لفتح صفحة طباعة رسالة مباشرة العمل
+        // دالة طباعة مباشرة العمل
         function printWorkLetter(btn) {
             var empName = btn.getAttribute('data-name');
             var empSalary = btn.getAttribute('data-salary');
