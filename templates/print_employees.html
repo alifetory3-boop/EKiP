@@ -2,78 +2,82 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>كشف أسماء ومرتبات الموظفين - المركب الرياضي بالمرج</title>
+    <title>كشف أسماء الموظفين والرواتب الأساسية</title>
     <style>
-        @page { size: A4; margin: 15mm; }
-        body { font-family: 'Traditional Arabic', 'Tahoma', sans-serif; background: #fff; color: #000; margin: 0; padding: 10px; direction: rtl; }
-        .print-container { max-width: 100%; margin: auto; }
-        .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-        .header h2 { font-size: 20px; margin: 0 0 5px 0; }
-        .header h3 { font-size: 15px; margin: 0; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #000; padding: 8px 12px; text-align: center; font-size: 14px; }
-        th { background: #f2f2f2; }
-        .signatures { display: flex; justify-content: space-between; margin-top: 40px; text-align: center; font-size: 14px; }
-        .sig-box { width: 30%; border-top: 1px solid #000; padding-top: 8px; }
-        .print-btn { text-align: center; margin-top: 20px; }
-        .print-btn button { background: #2980b9; color: white; border: none; padding: 8px 25px; font-size: 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        @media print { .print-btn { display: none; } body { padding: 0; } }
+        @page { size: A5; margin: 8mm; }
+        body { font-family: 'Traditional Arabic', 'Tahoma', sans-serif; background: #fff; color: #000; margin: 0; padding: 5px; direction: rtl; }
+        .voucher-container { border: 2px solid #000; padding: 12px; border-radius: 6px; max-width: 100%; background: #fff; }
+        .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 6px; margin-bottom: 10px; }
+        .header h2 { font-size: 15px; margin: 0 0 2px 0; }
+        .header h3 { font-size: 11px; margin: 0; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 5px; font-size: 11px; }
+        th, td { border: 1px solid #000; padding: 4px 6px; text-align: center; }
+        th { background: #f2f2f2; font-weight: bold; }
+        td.name-col { text-align: right; padding-right: 8px; }
+        .total-row { font-weight: bold; background: #f9f9f9; }
+
+        .signatures { display: flex; justify-content: space-between; margin-top: 20px; text-align: center; font-size: 11px; }
+        .sig-box { width: 40%; border-top: 1px solid #000; padding-top: 4px; }
+        
+        .print-btn { text-align: center; margin-top: 15px; }
+        .print-btn button { background: #2980b9; color: white; border: none; padding: 6px 15px; font-size: 12px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        @media print { .print-btn { display: none; } body { padding: 0; } .voucher-container { border: none; } }
     </style>
 </head>
 <body>
 
-    <div class="print-container">
+    <div class="voucher-container">
         <div class="header">
-            <h2>مشروع إنشاء مركب رياضي بالمرج</h2>
-            <h3>كشف أسماء ومرتبات العاملين والموظفين الأساسية</h3>
+            <h2>مشروع مركب رياضي بالمرج</h2>
+            <h3>كشف أسماء الموظفين والرواتب الأساسية</h3>
         </div>
 
         <table>
             <thead>
                 <tr>
-                    <th style="width: 50px;">م</th>
-                    <th>اسم الموظف</th>
-                    <th style="width: 150px;">المرتب الأساسي (د.ل)</th>
-                    <th style="width: 150px;">التوقيع / ملاحظات</th>
+                    <th style="width: 8%;">م</th>
+                    <th>اسم الموظف الكامل</th>
+                    <th style="width: 25%;">الراتب الأساسي</th>
                 </tr>
             </thead>
             <tbody>
-                {% for emp in employees %}
-                <tr>
-                    <td>{{ loop.index }}</td>
-                    <td style="text-align: right; padding-right: 15px; font-weight: bold;">{{ emp.name }}</td>
-                    <td>{{ emp.default_salary|int }}</td>
-                    <td></td>
-                </tr>
+                {% if employees %}
+                    {% set total_salaries = namespace(val=0) %}
+                    {% for emp in employees %}
+                    {% set total_salaries.val = total_salaries.val + emp.default_salary %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td class="name-col">{{ emp.name }}</td>
+                        <td>{{ emp.default_salary|int }} د.ل</td>
+                    </tr>
+                    {% endfor %}
+                    <tr class="total-row">
+                        <td colspan="2" style="text-align: left; padding-left: 10px;">الإجمالي العام</td>
+                        <td>{{ total_salaries.val|int }} د.ل</td>
+                    </tr>
                 {% else %}
-                <tr>
-                    <td colspan="4" style="text-align: center;">لا توجد بيانات مسجلة.</td>
-                </tr>
-                {% endfor %}
+                    <tr><td colspan="3">لا توجد أسماء مسجلة</td></tr>
+                {% endif %}
             </tbody>
         </table>
 
         <div class="signatures">
             <div class="sig-box">
-                <p>إعداد الشؤون الإدارية</p>
-                <br><br>
-                <p>.......................................</p>
-            </div>
-            <div class="sig-box">
                 <p>المسئول المالي</p>
-                <br><br>
-                <p>.......................................</p>
+                <br>
+                <p>........................</p>
             </div>
             <div class="sig-box">
-                <p>اعتماد إدارة المشروع</p>
-                <br><br>
-                <p>.......................................</p>
+                <p>مدير المشروع</p>
+                <br>
+                <p>........................</p>
             </div>
         </div>
     </div>
 
     <div class="print-btn">
-        <button onclick="window.print()">طباعة كشف الموظفين الآن (A4)</button>
+        <button onclick="window.print()">طباعة الكشف (A5)</button>
     </div>
 
 </body>
