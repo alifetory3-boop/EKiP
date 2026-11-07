@@ -153,7 +153,7 @@ def users_management():
             p_hash = generate_password_hash(password)
             try:
                 conn.execute("INSERT INTO users (username, password_hash, full_name, role) VALUES (?, ?, ?, ?)", 
-                             (username, p_hash, full_name, role))
+                           (username, p_hash, full_name, role))
                 conn.commit()
                 log_activity("إضافة مستخدم", f"تم إنشاء حساب: {full_name}")
                 flash("تمت إضافة المستخدم بنجاح", "success")
@@ -189,6 +189,9 @@ def salaries():
                 conn.commit()
                 log_activity("إضافة موظف", f"إضافة الموظف: {name}")
                 flash("تم إضافة الموظف بنجاح", "success")
+                conn.close()
+                return redirect(url_for('salaries'))
+
             elif action == 'update_employee':
                 emp_id = request.form.get('emp_id')
                 name = request.form.get('name')
@@ -197,38 +200,60 @@ def salaries():
                 conn.commit()
                 log_activity("تعديل موظف", f"تعديل الموظف رقم {emp_id}")
                 flash("تم تعديل بيانات الموظف بنجاح", "success")
+                conn.close()
+                return redirect(url_for('salaries'))
+
             elif action == 'delete_employee':
                 emp_id = request.form.get('emp_id')
                 conn.execute("DELETE FROM employees WHERE id=?", (emp_id,))
                 conn.commit()
                 log_activity("حذف موظف", f"حذف الموظف رقم {emp_id}")
                 flash("تم حذف الموظف بنجاح", "success")
+                conn.close()
+                return redirect(url_for('salaries'))
+
             else:
-                employee_name = request.form.get('employee_name')
+                # --- رصد وحفظ الراتب الجديد واستخراج معرف السجل (ID) لفتح الإيصال تلقائياً ---
+                employee_id = request.form.get('employee_id')
+                
+                emp_record = conn.execute("SELECT name FROM employees WHERE id=?", (employee_id,)).fetchone()
+                employee_name = emp_record['name'] if emp_record else request.form.get('employee_name', 'مجهول')
+                
                 basic_salary = float(request.form.get('basic_salary', 0))
                 deductions = float(request.form.get('deductions', 0))
                 bonuses = float(request.form.get('bonuses', 0))
                 advance = float(request.form.get('advance', 0))
                 bonus_receipt_type = request.form.get('bonus_receipt_type', 'separate')
-                month_year = request.form.get('month_year')
+                month_year = request.form.get('month_year') or date.today().strftime('%Y-%m-%d')
 
-                conn.execute(
+                cur = conn.cursor()
+                cur.execute(
                     "INSERT INTO advanced_salaries (employee_name, basic_salary, deductions, bonuses, advance, bonus_receipt_type, month_year) VALUES (?, ?, ?, ?, ?, ?, ?)",
                     (employee_name, basic_salary, deductions, bonuses, advance, bonus_receipt_type, month_year)
                 )
                 conn.commit()
-                log_activity("رصد راتب ومستحقات", f"تم تسجيل مستحقات الموظف: {employee_name} عن شهر {month_year}")
-                flash("تم حفظ السجل بنجاح", "success")
+                new_salary_id = cur.lastrowid # الحصول على معرف الإيصال الجديد فوراً
+                
+                log_activity("رصد راتب ومستحقات", f"تم تسجيل مستحقات الموظف: {employee_name} عن تاريخ {month_year}")
+                conn.close()
+
+                # التوجيه الذكي لفتح صفحة الطباعة المناسبة في نافذة جديدة بناءً على نوع الإيصال
+                if bonus_receipt_type == 'bonus':
+                    return redirect(url_for('print_bonus_receipt', id=new_salary_id))
+                elif bonus_receipt_type == 'advance':
+                    return redirect(url_for('print_advance_receipt', id=new_salary_id))
+                else:
+                    return redirect(url_for('print_salary_receipt', id=new_salary_id))
+
         except Exception as e:
+            conn.close()
             flash(f"حدث خطأ: {e}", "danger")
-        
-        conn.close()
-        return redirect(url_for('salaries'))
+            return redirect(url_for('salaries'))
     
     employees = conn.execute("SELECT * FROM employees ORDER BY name").fetchall()
-    salaries = conn.execute("SELECT * FROM advanced_salaries ORDER BY id DESC").fetchall()
+    salaries_list = conn.execute("SELECT * FROM advanced_salaries ORDER BY id DESC").fetchall()
     conn.close()
-    return render_template('salaries.html', employees=employees, salaries=salaries)
+    return render_template('salaries.html', employees=employees, salaries=salaries_list)
 
 @app.route('/salaries/edit/<int:id>', methods=['GET', 'POST'])
 @login_required(roles=['accountant'])
@@ -599,39 +624,7 @@ def equipment_out():
     items_list = conn.execute("SELECT * FROM items ORDER BY name").fetchall()
     vouchers = conn.execute("SELECT * FROM equipment_vouchers WHERE type='out' ORDER BY id DESC LIMIT 10").fetchall()
     conn.close()
-    return render_template('equipment_form.html', title="إدارة العهد", action="تسليم", items=items_list, vouchers=vouchers, today=date.today().isoformat(), type='out')
-
-@app.route('/equipment_in', methods=['GET', 'POST'])
-@login_required(roles=['storekeeper'])
-def equipment_in():
-    conn = get_db()
-    if request.method == 'POST':
-        voucher_no = f"EQ-IN-{date.today().strftime('%Y%m%d%H%M%S')}-{random.randint(1000, 9999)}"
-        cur = conn.cursor()
-        cur.execute("INSERT INTO equipment_vouchers (voucher_no, type, worker_name, voucher_date, notes, created_by) VALUES (?, 'in', ?, ?, ?, ?)", (voucher_no, request.form['worker'], request.form['date'], request.form['notes'], session['user_id']))
-        vid = cur.lastrowid
-        item_ids, qtys, conds = request.form.getlist('item_id[]'), request.form.getlist('qty[]'), request.form.getlist('condition[]')
-        for i in range(len(item_ids)):
-            if item_ids[i] and float(qtys[i]) > 0:
-                cur.execute("INSERT INTO equipment_lines (voucher_id, item_id, qty, condition) VALUES (?,?,?,?)", (vid, item_ids[i], qtys[i], conds[i]))
-                cur.execute("INSERT INTO stock_movements (item_id, move_type, qty, move_date, ref_type, ref_id, created_by) VALUES (?, 'in', ?, ?, 'equipment', ?, ?)", (item_ids[i], qtys[i], request.form['date'], vid, session['user_id']))
-        conn.commit()
-        log_activity("استلام عهدة", f"استلام عهدة من الموظف {request.form['worker']}")
-        conn.close()
-        flash("تم استلام العهدة بنجاح", "success")
-        return redirect(url_for('equipment_in'))
-    items_list = conn.execute("SELECT * FROM items ORDER BY name").fetchall()
-    vouchers = conn.execute("SELECT * FROM equipment_vouchers WHERE type='in' ORDER BY id DESC LIMIT 10").fetchall()
-    conn.close()
-    return render_template('equipment_form.html', title="إدارة العهد", action="استلام", items=items_list, vouchers=vouchers, today=date.today().isoformat(), type='in')
-
-@app.route('/archive')
-@login_required(roles=['storekeeper'])
-def archive():
-    conn = get_db()
-    vouchers = conn.execute("SELECT * FROM issue_vouchers ORDER BY id DESC").fetchall()
-    conn.close()
-    return render_template('archive.html', vouchers=vouchers)
+    return render_template('equipment_out.html', items=items_list, vouchers=vouchers, today=date.today().isoformat())
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000)
