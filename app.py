@@ -255,6 +255,38 @@ def salaries():
     conn.close()
     return render_template('salaries.html', employees=employees, salaries=salaries_list)
 
+@app.route('/salaries/update', methods=['POST'])
+@login_required(roles=['accountant'])
+def update_employee():
+    emp_id = request.form.get('emp_id')
+    name = request.form.get('name')
+    default_salary = float(request.form.get('default_salary', 0))
+    conn = get_db()
+    conn.execute("UPDATE employees SET name=?, default_salary=? WHERE id=?", (name, default_salary, emp_id))
+    conn.commit()
+    conn.close()
+    flash("تم تعديل بيانات الموظف بنجاح", "success")
+    return redirect(url_for('salaries'))
+
+@app.route('/salaries/delete', methods=['POST'])
+@login_required(roles=['accountant'])
+def delete_employee():
+    emp_id = request.form.get('emp_id')
+    conn = get_db()
+    conn.execute("DELETE FROM employees WHERE id=?", (emp_id,))
+    conn.commit()
+    conn.close()
+    flash("تم حذف الموظف بنجاح", "success")
+    return redirect(url_for('salaries'))
+
+@app.route('/salaries/print/work_letter/<int:id>')
+@login_required(roles=['accountant'])
+def print_work_letter(id):
+    conn = get_db()
+    emp = conn.execute("SELECT * FROM employees WHERE id=?", (id,)).fetchone()
+    conn.close()
+    return render_template('print_work_letter.html', emp=emp)
+
 @app.route('/salaries/edit/<int:id>', methods=['GET', 'POST'])
 @login_required(roles=['accountant'])
 def edit_salary(id):
@@ -609,22 +641,22 @@ def equipment_out():
     if request.method == 'POST':
         voucher_no = f"EQ-OUT-{date.today().strftime('%Y%m%d%H%M%S')}-{random.randint(1000, 9999)}"
         cur = conn.cursor()
-        cur.execute("INSERT INTO equipment_vouchers (voucher_no, type, worker_name, voucher_date, notes, created_by) VALUES (?, 'out', ?, ?, ?, ?)", (voucher_no, request.form['worker'], request.form['date'], request.form['notes'], session['user_id']))
+        cur.execute("INSERT INTO equipment_vouchers (voucher_no, voucher_date, department, created_by) VALUES (?,?,?,?)", 
+                    (voucher_no, request.form['voucher_date'], request.form.get('department', 'عام'), session['user_id']))
         vid = cur.lastrowid
-        item_ids, qtys = request.form.getlist('item_id[]'), request.form.getlist('qty[]')
-        for i in range(len(item_ids)):
-            if item_ids[i] and float(qtys[i]) > 0:
-                cur.execute("INSERT INTO equipment_lines (voucher_id, item_id, qty) VALUES (?,?,?)", (vid, item_ids[i], qtys[i]))
-                cur.execute("INSERT INTO stock_movements (item_id, move_type, qty, move_date, ref_type, ref_id, created_by) VALUES (?, 'out', ?, ?, 'equipment', ?, ?)", (item_ids[i], qtys[i], request.form['date'], vid, session['user_id']))
+        item_names, qtys = request.form.getlist('item_name[]'), request.form.getlist('qty[]')
+        for i in range(len(item_names)):
+            if item_names[i] and float(qtys[i]) > 0:
+                item = cur.execute("SELECT id FROM items WHERE name=?", (item_names[i],)).fetchone()
+                item_id = item['id'] if item else cur.execute("INSERT INTO items (code, name, unit, category) VALUES (?, ?, ?, ?)", (f"GEN-{random.randint(1000,9999)}", item_names[i], 'حبة', 'عام')).lastrowid
+                cur.execute("INSERT INTO equipment_lines (voucher_id, item_id, qty) VALUES (?,?,?)", (vid, item_id, qtys[i]))
         conn.commit()
-        log_activity("تسليم عهدة", f"تسليم عهدة للموظف {request.form['worker']}")
+        log_activity("إذن معدات", f"تسجيل إذن معدات رقم {voucher_no}")
+        flash("تم تسجيل إذن المعدات بنجاح", "success")
         conn.close()
-        flash("تم تسليم العهدة بنجاح", "success")
         return redirect(url_for('equipment_out'))
-    items_list = conn.execute("SELECT * FROM items ORDER BY name").fetchall()
-    vouchers = conn.execute("SELECT * FROM equipment_vouchers WHERE type='out' ORDER BY id DESC LIMIT 10").fetchall()
     conn.close()
-    return render_template('equipment_out.html', items=items_list, vouchers=vouchers, today=date.today().isoformat())
+    return render_template('equipment_out.html', today=date.today().isoformat())
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(debug=True)
