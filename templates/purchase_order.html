@@ -1,211 +1,164 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <title>{{ doc_title }}</title>
-    <style>
-        @page { size: A4; margin: 0; }
-        body { font-family: 'Traditional Arabic', Tahoma, sans-serif; margin: 0; padding: 0; background: #fff; color: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        
-        .page {
-            width: 210mm; height: 297mm;
-            background: url('{{ url_for("static", filename="letterhead.png") }}') no-repeat center top;
-            background-size: cover;
-            position: relative;
-            padding: 170px 25px 90px 25px; 
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .header-title { text-align: center; margin-bottom: 10px; }
-        .header-title h2 { margin: 0; font-size: 20px; font-weight: bold; }
-        .header-title p { margin: 3px 0; font-size: 13px; }
-
-        .meta-info { 
-            display: flex; justify-content: space-between; flex-wrap: wrap;
-            margin-bottom: 10px; font-size: 13px; font-weight: bold; 
-            background: rgba(255, 255, 255, 0.7); padding: 5px 8px; border-radius: 4px;
-        }
-        
-        table { 
-            width: 100%; border-collapse: collapse; 
-            background: rgba(255, 255, 255, 0.9); 
-            margin-bottom: auto; 
-        }
-        th, td { border: 1px solid #000; padding: 5px 6px; text-align: center; font-size: 13px; }
-        th { background: rgba(224, 224, 224, 0.9); font-weight: bold; }
-        
-        input[type="text"], input[type="number"], select { 
-            width: 95%; padding: 3px; text-align: center; font-size: 13px; 
-            border: 1px solid #ccc; border-radius: 3px; background: rgba(255,255,255,0.8); 
-        }
-
-        .signatures { 
-            display: flex; justify-content: space-between; 
-            text-align: center; font-size: 15px; font-weight: bold; 
-            position: absolute;
-            bottom: 90px; 
-            left: 30px;
-            right: 30px;
-        }
-        .sig-box { width: 40%; }
-        .sig-line { border-bottom: 1px solid #000; margin-top: 15px; } 
-
-        .btn-container { text-align: center; margin-top: 15px; display: flex; justify-content: center; gap: 10px; }
-        .btn { padding: 6px 15px; font-size: 14px; cursor: pointer; color: white; border: none; border-radius: 4px; font-weight: bold; }
-        .btn-success { background: #27ae60; }
-        .btn-warning { background: #e67e22; }
-        .btn-primary { background: #2980b9; }
-
-        @media print {
-            .no-print { display: none !important; }
-            body { background: white; }
-            .page { box-shadow: none; padding: 170px 25px 90px 25px; }
-            input, select { border: none; background: transparent; appearance: none; font-weight: bold; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ doc_title }}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Cairo', Tahoma, sans-serif; background: url('{{ url_for("static", filename="stadium.jpg") }}') no-repeat center center fixed; background-size: cover; min-height: 100vh; padding: 15px; color: #fff; }
+    header { background: rgba(15, 32, 39, 0.85); backdrop-filter: blur(15px); padding: 12px 20px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); }
+    header a { color: #4facfe; text-decoration: none; font-weight: bold; font-size: 14px; }
+    
+    .container { display: flex; flex-direction: column; align-items: center; gap: 20px; margin-top: 15px; width: 100%; max-width: 950px; margin-left: auto; margin-right: auto; }
+    .form-box { background: rgba(15, 32, 39, 0.75); backdrop-filter: blur(15px); padding: 25px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); width: 100%; }
+    
+    h3 { color: #fff; margin-bottom: 20px; font-weight: 800; border-bottom: 2px solid #4facfe; padding-bottom: 10px; font-size: 18px; text-align: center; }
+    
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+    @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+    
+    input, select { width: 100%; padding: 10px; margin: 5px 0; background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; color: #fff; font-family: 'Cairo'; font-size: 14px; }
+    input:focus, select:focus { outline: none; border-color: #4facfe; background: rgba(255, 255, 255, 0.25); }
+    input::placeholder { color: #d1d5db; }
+    select option { background: #0f2027; color: #fff; }
+    
+    label { display: block; margin-top: 5px; font-weight: 600; color: #e2e8f0; font-size: 13px; }
+    
+    .row { display: grid; grid-template-columns: 150px 1fr 90px 100px 40px; gap: 8px; margin-bottom: 10px; align-items: center; }
+    @media (max-width: 768px) { .row { grid-template-columns: 1fr; } }
+    
+    .add-new-btn { background: #3498db; padding: 10px; border-radius: 8px; color: #fff; text-decoration: none; display: flex; align-items: center; justify-content: center; height: 40px; }
+    
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; background: rgba(255, 255, 255, 0.9); color: #000; border-radius: 8px; overflow: hidden; }
+    th, td { padding: 10px; text-align: center; border-bottom: 1px solid #ddd; font-size: 13px; }
+    th { background: #2c3e50; color: #fff; }
+    
+    .msg { padding: 10px; border-radius: 6px; text-align: center; margin-bottom: 15px; font-weight: bold; font-size: 13px; }
+    .success { background: rgba(39, 174, 96, 0.9); }
+    .danger { background: rgba(231, 76, 60, 0.9); }
+    
+    .btn { padding: 10px 20px; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.3s; width: 100%; margin-top: 10px; }
+    .btn-success { background: #27ae60; }
+    .btn-success:hover { background: #219653; }
+    .btn-primary { background: #3498db; }
+    .btn-primary:hover { background: #2980b9; }
+  </style>
 </head>
 <body>
+  <header>
+    <div>🛒 {{ doc_title }}</div>
+    <div><a href="{{ url_for('dashboard') }}">الرئيسية 🏠</a></div>
+  </header>
+  
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+      <div class="msg {{ cat }}">{{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
 
-<div class="page">
-    <div class="header-title">
-        <h2>{{ doc_title }}</h2>
-        <p>مشروع انشاء مركب رياضي بالمرج</p>
-    </div>
-
-    <form method="POST">
-        <div class="meta-info">
-            <div>التاريخ: <input type="date" name="voucher_date" value="{{ today }}"></div>
-            <div>الإشاري / المورد: <input type="text" name="supplier" value="{{ carried_data['supplier'] if carried_data and carried_data['supplier'] else '' }}" placeholder="رقم الإشاري" style="width: 150px; display: inline-block;"></div>
+  <div class="container">
+    <div class="form-box">
+      <h3>{{ doc_title }}</h3>
+      <form method="post">
+        <div class="form-grid">
+          <div>
+            <label>التاريخ:</label>
+            <input type="date" name="voucher_date" value="{{ today }}" required>
+          </div>
+          <div>
+            <label>المورد / الجهة:</label>
+            <input name="supplier" value="{{ carried_data['supplier'] if carried_data and carried_data['supplier'] else '' }}" placeholder="اسم المورد أو القسم الطالب" required>
+          </div>
+          <div>
+            <label>رقم الفاتورة / الإشاري:</label>
+            <input name="invoice_no" placeholder="رقم الفاتورة (اختياري)">
+          </div>
+          <div>
+            <label>اسم المستلم:</label>
+            <input name="receiver_name" placeholder="اسم المستلم">
+          </div>
         </div>
-
-        <table id="poTable">
-            <thead>
-                <tr>
-                    <th style="width: 40px;">م</th>
-                    <th>اسم الصنف / البيان</th>
-                    <th style="width: 90px;">الكمية</th>
-                    <th style="width: 110px;">السعر التقديري</th>
-                    <th style="width: 110px;">الإجمالي</th>
-                    <th class="no-print" style="width: 60px;">إجراء</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% if carried_data and carried_data['items'] %}
-                    {% for item in carried_data['items'] %}
-                    <tr>
-                        <td>{{ loop.index }}</td>
-                        <td><input type="text" name="item_name[]" value="{{ item.name }}"></td>
-                        <td><input type="number" name="qty[]" value="{{ item.qty }}" min="1" oninput="calcTotal(this)"></td>
-                        <td><input type="number" name="price[]" value="{{ item.price }}" step="0.01" oninput="calcTotal(this)"></td>
-                        <td class="row-total">0.00</td>
-                        <td class="no-print"><button type="button" onclick="removeRow(this)" style="color:red; background:none; border:none; cursor:pointer; font-weight:bold;">حذف</button></td>
-                    </tr>
-                    {% endfor %}
-                {% else %}
-                    <tr>
-                        <td>1</td>
-                        <td>
-                            <select name="item_name[]">
-                                <option value="">-- اختر صنفاً --</option>
-                                {% for item in items %}
-                                <option value="{{ item.name }}">{{ item.name }} ({{ item.unit }})</option>
-                                {% endfor %}
-                            </select>
-                        </td>
-                        <td><input type="number" name="qty[]" value="1" min="1" oninput="calcTotal(this)"></td>
-                        <td><input type="number" name="price[]" value="0.00" step="0.01" oninput="calcTotal(this)"></td>
-                        <td class="row-total">0.00</td>
-                        <td class="no-print"><button type="button" onclick="removeRow(this)" style="color:red; background:none; border:none; cursor:pointer; font-weight:bold;">حذف</button></td>
-                    </tr>
-                {% endif %}
-            </tbody>
-        </table>
-
-        <div class="no-print" style="margin-top: 8px;">
-            <button type="button" class="btn btn-primary" onclick="addRow()" style="padding: 4px 10px; font-size: 12px;">+ إضافة سطر</button>
-        </div>
-
-        <div style="text-align: left; font-size: 14px; font-weight: bold; margin: 10px 0;">
-            الإجمالي العام: <span id="grandTotal">0.00</span> د.ل
-        </div>
-
-        <div class="signatures">
-            <div class="sig-box"><p>المسلم</p><div class="sig-line"></div></div>
-            <div class="sig-box"><p>المستلم</p><div class="sig-line"></div></div>
-        </div>
-
-        <div class="btn-container no-print">
-            {% if is_purchase %}
-            <button type="submit" class="btn btn-warning">➡️ نقل إلى إذن الصرف</button>
-            {% else %}
-            <button type="submit" class="btn btn-success">💾 حفظ الصرف النهائي</button>
-            {% endif %}
-            
-            <button type="button" class="btn btn-primary" onclick="window.print()">🖨️ طباعة</button>
-        </div>
-    </form>
-</div>
-
-<script>
-    function addRow() {
-        let table = document.getElementById("poTable").getElementsByTagName('tbody')[0];
-        let rowCount = table.rows.length + 1;
-        let newRow = table.insertRow();
         
-        newRow.innerHTML = `
-            <td>${rowCount}</td>
-            <td>
-                <select name="item_name[]">
-                    <option value="">-- اختر صنفاً --</option>
-                    {% for item in items %}
-                    <option value="{{ item.name }}">{{ item.name }} ({{ item.unit }})</option>
-                    {% endfor %}
-                </select>
-            </td>
-            <td><input type="number" name="qty[]" value="1" min="1" oninput="calcTotal(this)"></td>
-            <td><input type="number" name="price[]" value="0.00" step="0.01" oninput="calcTotal(this)"></td>
-            <td class="row-total">0.00</td>
-            <td class="no-print"><button type="button" onclick="removeRow(this)" style="color:red; background:none; border:none; cursor:pointer; font-weight:bold;">حذف</button></td>
-        `;
+        <h4 style="margin-top: 15px; color: #4facfe; font-size: 15px; text-align: center; margin-bottom: 10px;">الأصناف والمواد:</h4>
+        
+        <div id="items-container">
+          <div class="row item-row">
+            <!-- قائمة تصفية الأقسام المأخوذة من قاعدة البيانات/الإكسل -->
+            <select name="category_filter[]" class="category-filter" onchange="filterItems(this)">
+              <option value="">-- اختر القسم --</option>
+              {% for cat in categories %}
+              <option value="{{ cat.category }}">{{ cat.category }}</option>
+              {% endfor %}
+            </select>
+            
+            <!-- قائمة الأصناف المرتبطة بالقسم -->
+            <select name="item_name[]" class="item-select" required>
+              <option value="">-- اختر الصنف --</option>
+              {% for item in items %}
+              <option value="{{ item.name }}" data-category="{{ item.category }}">{{ item.name }} ({{ item.unit }})</option>
+              {% endfor %}
+            </select>
+            
+            <input type="number" step="0.01" name="qty[]" placeholder="الكمية" value="1" min="1" required>
+            <input type="number" step="0.01" name="price[]" placeholder="السعر" value="0.00" required>
+            
+            <a href="{{ url_for('items') }}" target="_blank" class="add-new-btn" title="إضافة صنف جديد للقاعدة"><i class="fa-solid fa-plus"></i></a>
+          </div>
+        </div>
+        
+        <button type="button" class="btn btn-primary" onclick="addRow()" style="margin-top: 10px; font-size: 13px; width: auto; padding: 8px 20px;">+ إضافة سطر آخر</button>
+        
+        <button type="submit" class="btn btn-success" style="margin-top: 20px;">💾 حفظ الطلب وتسجيل البيانات</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function filterItems(categorySelect) {
+      const row = categorySelect.closest('.item-row');
+      const itemSelect = row.querySelector('.item-select');
+      const selectedCategory = categorySelect.value;
+      const options = itemSelect.querySelectorAll('option');
+
+      itemSelect.value = ""; 
+      options.forEach(option => {
+        if (option.value === "") return;
+        if (selectedCategory === "" || option.getAttribute('data-category') === selectedCategory) {
+          option.style.display = '';
+        } else {
+          option.style.display = 'none';
+        }
+      });
     }
 
-    function removeRow(btn) {
-        let row = btn.closest('tr');
-        row.remove();
-        updateRowNumbers();
-        calculateGrandTotal();
+    function addRow() {
+      const container = document.getElementById('items-container');
+      const newRow = document.createElement('div');
+      newRow.className = 'row item-row';
+      
+      newRow.innerHTML = `
+        <select name="category_filter[]" class="category-filter" onchange="filterItems(this)">
+          <option value="">-- اختر القسم --</option>
+          {% for cat in categories %}
+          <option value="{{ cat.category }}">{{ cat.category }}</option>
+          {% endfor %}
+        </select>
+        <select name="item_name[]" class="item-select" required>
+          <option value="">-- اختر الصنف --</option>
+          {% for item in items %}
+          <option value="{{ item.name }}" data-category="{{ item.category }}">{{ item.name }} ({{ item.unit }})</option>
+          {% endfor %}
+        </select>
+        <input type="number" step="0.01" name="qty[]" placeholder="الكمية" value="1" min="1" required>
+        <input type="number" step="0.01" name="price[]" placeholder="السعر" value="0.00" required>
+        <a href="{{ url_for('items') }}" target="_blank" class="add-new-btn" title="إضافة صنف جديد"><i class="fa-solid fa-plus"></i></a>
+      `;
+      
+      container.appendChild(newRow);
     }
-
-    function updateRowNumbers() {
-        let rows = document.querySelectorAll("#poTable tbody tr");
-        rows.forEach((row, index) => {
-            row.cells[0].innerText = index + 1;
-        });
-    }
-
-    function calcTotal(element) {
-        let row = element.closest('tr');
-        let qty = parseFloat(row.cells[2].querySelector('input').value) || 0;
-        let price = parseFloat(row.cells[3].querySelector('input').value) || 0;
-        let total = qty * price;
-        row.cells[4].innerText = total.toFixed(2);
-        calculateGrandTotal();
-    }
-
-    function calculateGrandTotal() {
-        let totals = document.querySelectorAll('.row-total');
-        let sum = 0;
-        totals.forEach(t => { sum += parseFloat(t.innerText) || 0; });
-        document.getElementById('grandTotal').innerText = sum.toFixed(2);
-    }
-
-    document.querySelectorAll('#poTable tbody tr').forEach(row => {
-        let qtyInput = row.cells[2].querySelector('input');
-        if (qtyInput) calcTotal(qtyInput);
-    });
-</script>
-
+  </script>
 </body>
 </html>
