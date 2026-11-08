@@ -534,7 +534,8 @@ def print_purchase(voucher_id):
 @login_required(roles=['storekeeper'])
 def purchase_order():
     conn = get_db()
-    items_list = conn.execute("SELECT * FROM items ORDER BY name").fetchall()
+    items_list = conn.execute("SELECT * FROM items ORDER BY category, name").fetchall()
+    categories = conn.execute("SELECT DISTINCT category FROM items ORDER BY category").fetchall()
     conn.close()
     if request.method == 'POST':
         item_names, qtys, prices = request.form.getlist('item_name[]'), request.form.getlist('qty[]'), request.form.getlist('price[]')
@@ -542,7 +543,7 @@ def purchase_order():
         session['carried_items'] = {'items': carried_items_list, 'supplier': request.form.get('supplier', '')}
         flash("تم نقل البيانات بنجاح", "success")
         return redirect(url_for('issue_order'))
-    return render_template('purchase_order.html', items=items_list, today=date.today().isoformat(), doc_title="نموذج إذن شراء / طلب توريد", is_purchase=True)
+    return render_template('purchase_order.html', items=items_list, categories=categories, today=date.today().isoformat(), doc_title="نموذج إذن شراء / طلب توريد", is_purchase=True)
 
 @app.route('/issue_order', methods=['GET', 'POST'])
 @login_required(roles=['storekeeper'])
@@ -566,9 +567,10 @@ def issue_order():
         conn.close()
         flash("تم تسجيل أمر الصرف بنجاح", "success")
         return redirect(url_for('issue'))
-    items_list = conn.execute("SELECT * FROM items ORDER BY name").fetchall()
+    items_list = conn.execute("SELECT * FROM items ORDER BY category, name").fetchall()
+    categories = conn.execute("SELECT DISTINCT category FROM items ORDER BY category").fetchall()
     conn.close()
-    return render_template('purchase_order.html', items=items_list, today=date.today().isoformat(), doc_title="أمر صرف مواد", is_purchase=False, carried_data=session.pop('carried_items', None))
+    return render_template('purchase_order.html', items=items_list, categories=categories, today=date.today().isoformat(), doc_title="أمر صرف مواد", is_purchase=False, carried_data=session.pop('carried_items', None))
 
 @app.route('/issue', methods=['GET', 'POST'])
 @login_required(roles=['storekeeper'])
