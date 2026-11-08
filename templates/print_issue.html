@@ -19,25 +19,26 @@
     }
 
     .header-title { text-align: center; margin-bottom: 15px; }
-    .header-title h2 { margin: 0; font-size: 20px; font-weight: bold; }
-    .header-title p { margin: 3px 0; font-size: 14px; }
+    .header-title h2 { margin: 0; font-size: 22px; font-weight: bold; color: #1e3a8a; }
+    .header-title p { margin: 3px 0; font-size: 14px; font-weight: bold; }
 
     .details { 
       display: flex; justify-content: space-between; flex-wrap: wrap;
       margin-bottom: 15px; font-size: 14px; font-weight: bold; 
-      background: rgba(255, 255, 255, 0.6); padding: 8px; border-radius: 5px;
+      background: rgba(255, 255, 255, 0.85); padding: 8px 12px; border-radius: 6px;
+      border: 1px solid #cbd5e1;
     }
     .details div { width: 48%; margin-bottom: 5px; } 
 
     table { 
       width: 100%; border-collapse: collapse; 
-      background: rgba(255, 255, 255, 0.8); 
+      background: rgba(255, 255, 255, 0.9); 
       margin-bottom: auto; 
     }
-    th, td { border: 1px solid #000; padding: 6px 8px; text-align: center; font-size: 13px; }
-    th { background: rgba(224, 224, 224, 0.9); font-weight: bold; }
+    th, td { border: 1px solid #000; padding: 6px 8px; text-align: center; font-size: 14px; }
+    th { background: rgba(224, 224, 224, 0.95); font-weight: bold; }
 
-    /* التوقيعات المطابقة لطلبك */
+    /* التوقيعات */
     .signatures { 
       display: flex; justify-content: space-between; 
       text-align: center; font-size: 15px; font-weight: bold; 
@@ -47,37 +48,42 @@
       right: 30px;
     }
     .sig-box { width: 45%; }
-    .sig-line { border-bottom: 1px solid #000; margin-top: 15px; } 
+    .sig-line { border-bottom: 1px solid #000; margin-top: 20px; } 
 
     @media print { .no-print { display: none; } }
   </style>
 </head>
 <body>
   <div class="no-print" style="text-align: center; margin-bottom: 10px; padding-top: 10px;">
-    <button onclick="window.print()" style="padding: 8px 20px; background: #27ae60; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer;">🖨️ طباعة / حفظ PDF</button>
+    <button onclick="window.print()" style="padding: 10px 25px; background: #27ae60; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-family: 'Cairo', sans-serif; font-weight: bold;">🖨️ طباعة / حفظ PDF</button>
   </div>
 
   <div class="page">
     <div class="header-title">
-      <h2>أمر صرف مواد</h2>
-      <p>مشروع انشاء مركب رياضي بالمرج</p>
+      <h2>إذن صرف وتسليم مواد (Store Material Requisition - SMR)</h2>
+      <p>مشروع إنشاء مركب رياضي بالمرج</p>
     </div>
 
     <div class="details">
       <div>التاريخ: {{ voucher.voucher_date }}</div>
-      <div>رقم الإذن: {{ voucher.voucher_no }}</div>
+      <div>رقم إذن التسليم (EKIP-TR): <span style="color: #1e3a8a;">{{ voucher.voucher_no }}</span></div>
       <div>الجهة الطالبة / القسم: {{ voucher.department }}</div>
     </div>
 
     <table>
       <thead>
-        <tr><th>م</th><th>اسم الصنف / البيان</th><th>الوحدة</th><th>الكمية</th></tr>
+        <tr>
+          <th style="width: 10%;">م</th>
+          <th style="width: 50%;">اسم الصنف / البيان</th>
+          <th style="width: 20%;">الوحدة</th>
+          <th style="width: 20%;">الكمية</th>
+        </tr>
       </thead>
       <tbody>
         {% for line in lines %}
         <tr>
           <td>{{ loop.index }}</td>
-          <td>{{ line.name }}</td>
+          <td style="text-align: right; padding-right: 10px;">{{ line.name }}</td>
           <td>{{ line.unit }}</td>
           <td>{{ line.qty | int }}</td>
         </tr>
@@ -87,8 +93,8 @@
 
     <!-- التوقيعات -->
     <div class="signatures">
-      <div class="sig-box"><p>المسلم</p><div class="sig-line"></div></div>
-      <div class="sig-box"><p>المستلم</p><div class="sig-line"></div></div>
+      <div class="sig-box"><p>المسلم (أمين المستودع)</p><div class="sig-line"></div></div>
+      <div class="sig-box"><p>المستلم (الجهة الطالبة)</p><div class="sig-line"></div></div>
     </div>
   </div>
 </body>
