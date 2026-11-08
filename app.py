@@ -27,7 +27,6 @@ CREATE TABLE IF NOT EXISTS user_activity_log (
 )
 """)
 
-# جدول الرواتب والمستحقات المطور ليدعم (الأساسي، الخصومات، المكافآت، السلف، ونوع إيصال المكافأة)
 conn.execute("""
 CREATE TABLE IF NOT EXISTS advanced_salaries (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -41,7 +40,6 @@ CREATE TABLE IF NOT EXISTS advanced_salaries (
 )
 """)
 
-# التأكد من إنشاء جدول الموظفين إذا لم يكن موجوداً
 conn.execute("""
 CREATE TABLE IF NOT EXISTS employees (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -50,7 +48,6 @@ CREATE TABLE IF NOT EXISTS employees (
 )
 """)
 
-# جدول خاص للتسلسلات والأكواد لضمان عدم التكرار والبدء من الرقم 2 أو حسب الطلب
 conn.execute("""
 CREATE TABLE IF NOT EXISTS system_counters (
     prefix_key TEXT PRIMARY KEY,
@@ -91,7 +88,6 @@ if conn.execute("SELECT COUNT(*) FROM users").fetchone()[0] == 0:
                  ('admin', generate_password_hash('admin123'), 'مدير النظام', 'admin'))
     conn.commit()
 
-# إدخال الموظفين تلقائياً إذا كان الجدول فارغاً
 if conn.execute("SELECT COUNT(*) FROM employees").fetchone()[0] == 0:
     initial_employees = [
         ("ابراهيم محمد ابراهيم", 1500), ("احمد صلاح موسي", 3000), ("اسماعيل يونس محمد ادم", 2500),
@@ -513,152 +509,5 @@ def delete_purchase(voucher_id):
     flash("تم حذف الطلب بنجاح", "success")
     return redirect(url_for('purchase'))
 
-@app.route('/print_purchase/<int:voucher_id>')
-@login_required(roles=['storekeeper'])
-def print_purchase(voucher_id):
-    conn = get_db()
-    voucher = conn.execute("SELECT * FROM purchase_vouchers WHERE id=?", (voucher_id,)).fetchone()
-    lines = conn.execute("SELECT i.name, i.unit, pl.qty, pl.price FROM purchase_lines pl JOIN items i ON pl.item_id = i.id WHERE pl.voucher_id=?", (voucher_id,)).fetchall()
-    conn.close()
-    return render_template('print_purchase.html', voucher=voucher, lines=lines)
-
-@app.route('/purchase_order', methods=['GET', 'POST'])
-@login_required(roles=['storekeeper'])
-def purchase_order():
-    conn = get_db()
-    
-    # توليد الأكواد الأربعة المطلوبة بالتسلسل (تبدأ من 2 بدون تكرار)
-    tk_num = get_next_sequence('EKIP-TK')
-    tr_num = get_next_sequence('EKIP-TR')
-    go_num = get_next_sequence('EKIP-GO')
-    tm_num = get_next_sequence('EKIP-TM')
-
-    auto_tk = f"EKIP-TK-{tk_num:03d}"
-    auto_tr = f"EKIP-TR-{tr_num:03d}"
-    auto_go = f"EKIP-GO-{go_num:03d}"
-    auto_tm = f"EKIP-TM-{tm_num:03d}"
-
-    items_list = conn.execute("SELECT * FROM items ORDER BY category, name").fetchall()
-    categories = conn.execute("SELECT DISTINCT category FROM items ORDER BY category").fetchall()
-    
-    if request.method == 'POST':
-        try:
-            voucher_date = request.form.get('voucher_date', date.today().isoformat())
-            supplier = request.form.get('supplier', 'عام')
-            receiver_name = request.form.get('receiver_name', '')
-            
-            cur = conn.cursor()
-            cur.execute("""
-                INSERT INTO purchase_vouchers (voucher_no, voucher_date, supplier, invoice_no, receiver_name, created_by) 
-                VALUES (?, ?, ?, ?, ?, ?)
-            """, (auto_tk, voucher_date, supplier, auto_go, receiver_name, session['user_id']))
-            vid = cur.lastrowid
-            
-            item_names = request.form.getlist('item_name[]')
-            qtys = request.form.getlist('qty[]')
-            prices = request.form.getlist('price[]')
-            
-            total_amount = 0
-            for i in range(len(item_names)):
-                if item_names[i] and float(qtys[i] or 0) > 0:
-                    itm_name = item_names[i]
-                    qty_val = float(qtys[i])
-                    price_val = float(prices[i] or 0)
-                    
-                    item_rec = cur.execute("SELECT id FROM items WHERE name=?", (itm_name,)).fetchone()
-                    if item_rec:
-                        item_id = item_rec['id']
-                    else:
-                        item_id = cur.execute(
-                            "INSERT INTO items (code, name, unit, category) VALUES (?, ?, ?, ?)", 
-                            (f"GEN-{random.randint(1000,9999)}", itm_name, 'حبة', 'عام')
-                        ).lastrowid
-                    
-                    cur.execute("INSERT INTO purchase_lines (voucher_id, item_id, qty, price) VALUES (?, ?, ?, ?)", 
-                                (vid, item_id, qty_val, price_val))
-                    
-                    cur.execute("""
-                        INSERT INTO stock_movements (item_id, move_type, qty, move_date, ref_type, ref_id, created_by) 
-                        VALUES (?, 'in', ?, ?, 'purchase', ?, ?)
-                    """, (item_id, qty_val, voucher_date, vid, session['user_id']))
-                    
-                    total_amount += qty_val * price_val
-            
-            if total_amount > 0:
-                cur.execute("""
-                    INSERT INTO expenses (description, amount, expense_date, category, payment_method, created_by) 
-                    VALUES (?, ?, ?, ?, ?, ?)
-                """, (f"شراء توريد - {auto_tk}", total_amount, voucher_date, 'مصروفات', 'كاش', session['user_id']))
-            
-            conn.commit()
-            flash(f"تم حفظ طلب الشراء بالترقيم التسلسلي الجديد ({auto_tk}, {auto_tr}, {auto_go}, {auto_tm}) بنجاح!", "success")
-            conn.close()
-            return redirect(url_for('purchase_order'))
-            
-        except Exception as e:
-            conn.close()
-            flash(f"حدث خطأ أثناء الحفظ: {e}", "danger")
-            return redirect(url_for('purchase_order'))
-            
-    conn.close()
-    return render_template('purchase_order.html', items=items_list, categories=categories, today=date.today().isoformat(), doc_title="نموذج طلب الشراء والتوريد", is_purchase=True, auto_tk=auto_tk, auto_tr=auto_tr, auto_go=auto_go, auto_tm=auto_tm)
-
-@app.route('/issue_order', methods=['GET', 'POST'])
-@login_required(roles=['storekeeper'])
-def issue_order():
-    conn = get_db()
-    if request.method == 'POST':
-        num_val = get_next_sequence('ISS')
-        voucher_no = f"EKIP-TR-{num_val:03d}"
-        department = request.form.get('supplier', 'عام')
-        cur = conn.cursor()
-        cur.execute("INSERT INTO issue_vouchers (voucher_no, voucher_date, department, created_by) VALUES (?,?,?,?)", (voucher_no, request.form['voucher_date'], department, session['user_id']))
-        vid = cur.lastrowid
-        item_names, qtys = request.form.getlist('item_name[]'), request.form.getlist('qty[]')
-        for i in range(len(item_names)):
-            if item_names[i] and float(qtys[i]) > 0:
-                item = cur.execute("SELECT id FROM items WHERE name=?", (item_names[i],)).fetchone()
-                item_id = item['id'] if item else cur.execute("INSERT INTO items (code, name, unit, category) VALUES (?, ?, ?, ?)", (f"GEN-{random.randint(1000,9999)}", item_names[i], 'حبة', 'عام')).lastrowid
-                cur.execute("INSERT INTO issue_lines (voucher_id, item_id, qty) VALUES (?,?,?)", (vid, item_id, qtys[i]))
-                cur.execute("INSERT INTO stock_movements (item_id, move_type, qty, move_date, ref_type, ref_id, created_by) VALUES (?, 'out', ?, ?, 'issue', ?, ?)", (item_id, qtys[i], request.form['voucher_date'], vid, session['user_id']))
-        conn.commit()
-        log_activity("إذن صرف", f"تسجيل أمر صرف مواد رقم {voucher_no}")
-        conn.close()
-        flash("تم تسجيل أمر الصرف بنجاح", "success")
-        return redirect(url_for('issue'))
-    items_list = conn.execute("SELECT * FROM items ORDER BY category, name").fetchall()
-    categories = conn.execute("SELECT DISTINCT category FROM items ORDER BY category").fetchall()
-    conn.close()
-    return render_template('issue_order.html', items=items_list, categories=categories, today=date.today().isoformat())
-
-@app.route('/issue')
-@login_required(roles=['storekeeper'])
-def issue():
-    conn = get_db()
-    vouchers = conn.execute("SELECT * FROM issue_vouchers ORDER BY id DESC").fetchall()
-    conn.close()
-    return render_template('issue.html', vouchers=vouchers)
-
-@app.route('/print_issue/<int:voucher_id>')
-@login_required(roles=['storekeeper'])
-def print_issue(voucher_id):
-    conn = get_db()
-    voucher = conn.execute("SELECT * FROM issue_vouchers WHERE id=?", (voucher_id,)).fetchone()
-    lines = conn.execute("SELECT i.name, i.unit, il.qty FROM issue_lines il JOIN items i ON il.item_id = i.id WHERE il.voucher_id=?", (voucher_id,)).fetchall()
-    conn.close()
-    return render_template('print_issue.html', voucher=voucher, lines=lines)
-
-@app.route('/delete_issue/<int:voucher_id>')
-@login_required(roles=['storekeeper'])
-def delete_issue(voucher_id):
-    conn = get_db()
-    conn.execute("DELETE FROM stock_movements WHERE ref_type='issue' AND ref_id=?", (voucher_id,))
-    conn.execute("DELETE FROM issue_lines WHERE voucher_id=?", (voucher_id,))
-    conn.execute("DELETE FROM issue_vouchers WHERE id=?", (voucher_id,))
-    conn.commit()
-    conn.close()
-    flash("تم حذف إذن الصرف بنجاح", "success")
-    return redirect(url_for('issue'))
-
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(host='0.0.0.0', port=5000, debug=True)
