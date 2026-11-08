@@ -1,56 +1,165 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <title>الجرد العام - المركب الرياضي بالمرج</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', Tahoma, sans-serif; }
-    body { background: url('{{ url_for("static", filename="stadium.jpg") }}') no-repeat center center fixed; background-size: cover; min-height: 100vh; padding: 15px; color: #fff; }
-    header { background: rgba(15, 32, 39, 0.9); backdrop-filter: blur(15px); padding: 10px 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); }
-    header a { color: #4facfe; text-decoration: none; font-weight: 700; font-size: 13px; background: rgba(255,255,255,0.08); padding: 5px 12px; border-radius: 6px; }
-    .box { background: rgba(15, 32, 39, 0.85); backdrop-filter: blur(15px); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); }
-    input, button { padding: 6px 10px; border-radius: 5px; border: 1px solid rgba(255,255,255,0.2); font-size: 12px; font-weight: 600; }
-    input { background: rgba(255,255,255,0.95); color: #000; }
-    button { background: #2980b9; color: #fff; border: none; cursor: pointer; font-weight: 700; transition: 0.3s; }
-    button:hover { background: #2471a3; }
-    .table-responsive { width: 100%; overflow-x: auto; max-height: 450px; overflow-y: auto; margin-top: 12px; }
-    table { width: 100%; border-collapse: collapse; text-align: center; }
-    th, td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 12px; }
-    th { background: rgba(0,0,0,0.5); color: #4facfe; position: sticky; top: 0; font-weight: 700; }
-  </style>
+    <meta charset="UTF-8">
+    <title>إدارة المخزون والمحاضر - شركة أكيب</title>
+    <style>
+        @page { size: A4; margin: 0; }
+        body { font-family: 'Traditional Arabic', Tahoma, sans-serif; margin: 0; padding: 0; background: #fff; color: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        
+        .page {
+            width: 210mm; height: 297mm;
+            background: url('{{ url_for("static", filename="letterhead.png") }}') no-repeat center top;
+            background-size: cover;
+            position: relative;
+            padding: 180px 25px 100px 25px; 
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header-title { text-align: center; margin-bottom: 15px; }
+        .header-title h2 { margin: 0; font-size: 22px; font-weight: bold; color: #1e3a8a; }
+        .header-title p { margin: 3px 0; font-size: 14px; font-weight: bold; }
+
+        .details { 
+            display: flex; justify-content: space-between; flex-wrap: wrap;
+            margin-bottom: 12px; font-size: 14px; font-weight: bold; 
+            background: rgba(255, 255, 255, 0.85); padding: 8px 12px; border-radius: 6px;
+            border: 1px solid #cbd5e1;
+        }
+        .details div { width: 48%; margin-bottom: 6px; } 
+
+        table { 
+            width: 100%; border-collapse: collapse; 
+            background: rgba(255, 255, 255, 0.9); 
+            margin-bottom: auto; 
+        }
+        th, td { border: 1px solid #000; padding: 6px 8px; text-align: center; font-size: 13px; height: auto; }
+        th { background: rgba(224, 224, 224, 0.95); font-weight: bold; }
+        
+        input[type="text"], input[type="number"], select { 
+            width: 95%; padding: 5px; text-align: center; font-size: 13px; 
+            border: 1px solid #cbd5e1; border-radius: 4px; background: rgba(255,255,255,0.95); 
+            font-family: 'Traditional Arabic', Tahoma, sans-serif;
+        }
+
+        .signatures { 
+            display: flex; justify-content: space-between; 
+            text-align: center; font-size: 15px; font-weight: bold; 
+            position: absolute;
+            bottom: 100px; 
+            left: 30px;
+            right: 30px;
+        }
+        .sig-box { width: 30%; }
+        .sig-line { border-bottom: 1px solid #000; margin-top: 20px; } 
+
+        @media print { .no-print { display: none; } }
+    </style>
 </head>
 <body>
-  <header>
-    <div style="font-weight: 800; font-size: 16px;"><i class="fa-solid fa-warehouse"></i> تقرير الجرد والمخزون</div>
-    <a href="{{ url_for('dashboard') }}"><i class="fa-solid fa-arrow-right"></i> الرئيسية</a>
-  </header>
-  <div class="box">
-    <form method="get" style="display: flex; gap: 10px; align-items: center;">
-      <label style="font-size: 12px; font-weight: 600; color: #cbd5e0;">إلى تاريخ:</label>
-      <input type="date" name="to_date" value="{{ to_date }}">
-      <button type="submit"><i class="fa-solid fa-filter"></i> عرض الجرد</button>
-    </form>
-    <div class="table-responsive">
-      <table>
-        <thead>
-          <tr><th>الكود</th><th>الصنف</th><th>الوحدة</th><th>الداخل (+)</th><th>الخارج (-)</th><th>الرصيد المتبقي</th></tr>
-        </thead>
-        <tbody>
-          {% for item in inventory_data %}
-          <tr>
-            <td>{{ item.code }}</td>
-            <td style="font-weight: 700; text-align: right; padding-right: 10px;">{{ item.name }}</td>
-            <td>{{ item.unit }}</td>
-            <td style="color: #2ecc71; font-weight: 700;">{{ item.in_qty }}</td>
-            <td style="color: #e74c3c; font-weight: 700;">{{ item.out_qty }}</td>
-            <td style="font-weight: 800; color: #4facfe;">{{ item.balance }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+  <div class="no-print" style="text-align: center; margin-bottom: 10px; padding-top: 10px;">
+    <button onclick="window.print()" style="padding: 8px 20px; background: #27ae60; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-family: 'Cairo', sans-serif; font-weight: bold;">🖨️ طباعة / حفظ PDF بالترويسة الرسمية</button>
+    <a href="{{ url_for('dashboard') }}" style="margin-right: 15px; text-decoration: none; font-weight: bold; color: #2c3e50; font-family: 'Cairo', sans-serif;">الرئيسية</a>
   </div>
+
+  <div class="page">
+    <div class="header-title">
+      <h2>سجل ومحضر حصر المواد والمخزون (Inventory Record)</h2>
+      <p>مشروع إنشاء مركب رياضي بالمرج</p>
+    </div>
+
+    <form method="POST">
+        <div class="details">
+            <div>التاريخ: <input type="date" name="voucher_date" value="{{ today }}"></div>
+            <div>رقم الإشاري (EKIP-GO): <input type="text" name="ref_no" placeholder="رقم الإشاري التلقائي" value="{{ auto_go }}"></div>
+            <div>أمين المستودع / المسؤول: <input type="text" name="sender_name" placeholder="اسم المسؤول"></div>
+            <div>جهة التدقيق / الاستلام: <input type="text" name="receiver_name" placeholder="الجهة"></div>
+        </div>
+
+        <table id="handoverTable">
+          <thead>
+            <tr>
+              <th style="width: 40px;">م</th>
+              <th>اسم الصنف / البيان</th>
+              <th style="width: 100px;">الوحدة</th>
+              <th style="width: 100px;">الكمية</th>
+              <th style="width: 150px;">ملاحظات</th>
+              <th class="no-print" style="width: 60px;">إجراء</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>
+                <select name="item_name[]">
+                  <option value="">-- اختر صنفاً --</option>
+                  {% for item in items %}
+                  <option value="{{ item.name }}">{{ item.name }} ({{ item.unit }})</option>
+                  {% endfor %}
+                </select>
+              </td>
+              <td><input type="text" name="unit[]" placeholder="الوحدة"></td>
+              <td><input type="number" name="qty[]" value="1" min="1"></td>
+              <td><input type="text" name="notes[]" placeholder="ملاحظات"></td>
+              <td class="no-print"><button type="button" onclick="removeRow(this)" style="color:red; background:none; border:none; cursor:pointer; font-weight:bold;">حذف</button></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="no-print" style="margin-top: 10px;">
+            <button type="button" onclick="addRow()" style="padding: 6px 15px; background: #2980b9; color: white; border: none; border-radius: 4px; cursor: pointer; font-family: 'Cairo', sans-serif; font-weight: bold;">+ إضافة صنف جديد</button>
+        </div>
+
+        <!-- التوقيعات -->
+        <div class="signatures">
+          <div class="sig-box"><p>لجنة الجرد والمطابقة</p><div class="sig-line"></div></div>
+          <div class="sig-box"><p>أمين المستودع</p><div class="sig-line"></div></div>
+          <div class="sig-box"><p>اعتماد مدير المشروع</p><div class="sig-line"></div></div>
+        </div>
+
+        <div class="no-print" style="text-align: center; margin-top: 20px;">
+            <button type="submit" style="padding: 10px 25px; background: #27ae60; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-family: 'Cairo', sans-serif; font-weight: bold;">💾 حفظ السجل وتوليد التسلسل</button>
+        </div>
+    </form>
+  </div>
+
+  <script>
+    function addRow() {
+        let table = document.getElementById("handoverTable").getElementsByTagName('tbody')[0];
+        let rowCount = table.rows.length + 1;
+        let newRow = table.insertRow();
+        
+        newRow.innerHTML = `
+            <td>${rowCount}</td>
+            <td>
+                <select name="item_name[]">
+                    <option value="">-- اختر صنفاً --</option>
+                    {% for item in items %}
+                    <option value="{{ item.name }}">{{ item.name }} ({{ item.unit }})</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td><input type="text" name="unit[]" placeholder="الوحدة"></td>
+            <td><input type="number" name="qty[]" value="1" min="1"></td>
+            <td><input type="text" name="notes[]" placeholder="ملاحظات"></td>
+            <td class="no-print"><button type="button" onclick="removeRow(this)" style="color:red; background:none; border:none; cursor:pointer; font-weight:bold;">حذف</button></td>
+        `;
+    }
+
+    function removeRow(btn) {
+        let row = btn.closest('tr');
+        row.remove();
+        updateRowNumbers();
+    }
+
+    function updateRowNumbers() {
+        let rows = document.querySelectorAll("#handoverTable tbody tr");
+        rows.forEach((row, index) => {
+            row.cells[0].innerText = index + 1;
+        });
+    }
+  </script>
 </body>
 </html>
