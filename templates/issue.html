@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>إذن صرف - المنظومة</title>
+  <title>إذن صرف وتسلّم - شركة أكيب</title>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
@@ -12,40 +12,40 @@
     header { background: rgba(15, 32, 39, 0.9); backdrop-filter: blur(15px); padding: 10px 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); }
     header a { color: #4facfe; text-decoration: none; font-weight: 700; font-size: 13px; background: rgba(255,255,255,0.08); padding: 5px 12px; border-radius: 6px; }
     
-    .container { display: flex; flex-direction: column; align-items: center; gap: 15px; margin-top: 10px; width: 100%; max-width: 900px; margin-left: auto; margin-right: auto; }
-    .form-box, .table-box { background: rgba(15, 32, 39, 0.85); backdrop-filter: blur(15px); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); width: 100%; }
+    .container { display: flex; flex-direction: column; align-items: center; gap: 15px; margin-top: 10px; width: 100%; max-width: 950px; margin-left: auto; margin-right: auto; }
+    .form-box, .table-box { background: rgba(15, 32, 39, 0.85); backdrop-filter: blur(15px); padding: 20px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); width: 100%; }
     
-    h3 { color: #4facfe; margin-bottom: 12px; font-weight: 700; font-size: 14px; text-align: center; }
+    h3 { color: #4facfe; margin-bottom: 12px; font-weight: 700; font-size: 16px; text-align: center; border-bottom: 2px solid #4facfe; padding-bottom: 8px; }
     
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
     @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
     
-    input, select { width: 100%; padding: 6px 8px; margin: 3px 0; background: rgba(255, 255, 255, 0.95); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 5px; color: #000; font-size: 12px; font-weight: 600; }
+    input, select { width: 100%; padding: 8px 10px; margin: 3px 0; background: rgba(255, 255, 255, 0.95); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 5px; color: #000; font-size: 13px; font-weight: 600; }
     select option { background: #fff; color: #000; }
     
-    label { display: block; margin-top: 3px; font-weight: 600; color: #cbd5e0; font-size: 11px; }
+    label { display: block; margin-top: 3px; font-weight: 600; color: #cbd5e0; font-size: 12px; }
     
-    button { padding: 7px 12px; background: #27ae60; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-weight: 700; font-size: 12px; transition: 0.3s; width: 100%; margin-top: 8px; }
+    button { padding: 8px 15px; background: #27ae60; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-weight: 700; font-size: 13px; transition: 0.3s; width: 100%; margin-top: 8px; }
     button:hover { background: #219653; }
     
-    .row { display: grid; grid-template-columns: 1fr 1fr 80px 35px; gap: 6px; margin-bottom: 8px; align-items: center; }
-    .row .add-new-btn { background: #2980b9; padding: 6px; border-radius: 5px; color: #fff; text-decoration: none; display: flex; align-items: center; justify-content: center; height: 30px; font-size: 12px; }
+    .row { display: grid; grid-template-columns: 140px 1fr 90px 35px; gap: 8px; margin-bottom: 8px; align-items: center; }
+    .row .add-new-btn { background: #2980b9; padding: 6px; border-radius: 5px; color: #fff; text-decoration: none; display: flex; align-items: center; justify-content: center; height: 35px; font-size: 13px; }
     
-    table { width: 100%; border-collapse: collapse; text-align: center; }
-    th, td { padding: 6px 8px; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 12px; }
-    th { background: rgba(0,0,0,0.5); color: #4facfe; font-weight: 700; }
+    table { width: 100%; border-collapse: collapse; text-align: center; background: rgba(255,255,255,0.95); color: #000; border-radius: 6px; overflow: hidden; }
+    th, td { padding: 8px 10px; border-bottom: 1px solid #ddd; font-size: 13px; }
+    th { background: #2c3e50; color: #fff; font-weight: 700; }
     
-    .msg { padding: 8px; border-radius: 5px; text-align: center; margin-bottom: 10px; font-weight: 700; font-size: 12px; }
+    .msg { padding: 8px; border-radius: 5px; text-align: center; margin-bottom: 10px; font-weight: 700; font-size: 13px; }
     .success { background: rgba(39, 174, 96, 0.85); }
     .danger { background: rgba(192, 57, 43, 0.85); }
     
-    .print-link { color: #4facfe; text-decoration: none; font-size: 14px; transition: 0.3s; }
-    .print-link:hover { color: #00f2fe; }
+    .print-link { color: #2980b9; text-decoration: none; font-size: 15px; transition: 0.3s; }
+    .print-link:hover { color: #1d6fa5; }
   </style>
 </head>
 <body>
   <header>
-    <div style="font-weight: 800; font-size: 16px;"><i class="fa-solid fa-file-export"></i> إذن صرف مواد</div>
+    <div style="font-weight: 800; font-size: 16px;"><i class="fa-solid fa-file-export"></i> إذن صرف وتسلّم مواد (SMR) - شركة أكيب</div>
     <div><a href="{{ url_for('dashboard') }}"><i class="fa-solid fa-arrow-right"></i> الرئيسية</a></div>
   </header>
   
@@ -57,7 +57,7 @@
 
   <div class="container">
     <div class="form-box">
-      <h3>تسجيل إذن صرف جديد</h3>
+      <h3>تسجيل إذن صرف جديد (برقم تسلسلي تلقائي EKIP-TR)</h3>
       <form method="post">
         <div class="form-grid">
           <div>
@@ -66,11 +66,11 @@
           </div>
           <div>
             <label>الجهة الطالبة / القسم:</label>
-            <input name="department" placeholder="اسم القسم الطالب" required>
+            <input name="department" placeholder="اسم القسم أو المشروع الفرعي" required>
           </div>
         </div>
         
-        <h4 style="margin-top: 10px; color: #4facfe; font-size: 13px; text-align: center; font-weight: 700;">الأصناف المطلوبة:</h4>
+        <h4 style="margin-top: 12px; color: #4facfe; font-size: 14px; text-align: center; font-weight: 700;">الأصناف والمواد المنصرفة:</h4>
         
         <div id="items-container">
           <div class="row item-row">
@@ -84,38 +84,38 @@
             <select name="item_id[]" class="item-select" required>
               <option value="">-- اختر الصنف --</option>
               {% for item in items %}
-              <option value="{{ item.id }}" data-category="{{ item.category }}">{{ item.name }}</option>
+              <option value="{{ item.id }}" data-category="{{ item.category }}">{{ item.name }} ({{ item.unit }})</option>
               {% endfor %}
             </select>
             
-            <input type="number" step="0.01" name="qty[]" placeholder="الكمية" required>
+            <input type="number" step="0.01" name="qty[]" placeholder="الكمية" required min="1">
             
             <a href="{{ url_for('items') }}" target="_blank" class="add-new-btn" title="إضافة صنف جديد"><i class="fa-solid fa-plus"></i></a>
           </div>
         </div>
         
-        <button type="button" onclick="addRow()" style="background:#2980b9; margin-top: 8px;">+ إضافة صنف آخر</button>
+        <button type="button" onclick="addRow()" style="background:#2980b9; margin-top: 10px; width: auto; padding: 6px 15px; font-size: 12px;">+ إضافة صنف آخر</button>
         
-        <button type="submit" style="margin-top: 12px;"><i class="fa-solid fa-floppy-disk"></i> حفظ إذن الصرف</button>
+        <button type="submit" style="margin-top: 15px;"><i class="fa-solid fa-floppy-disk"></i> حفظ إذن الصرف وتوليد التسلسل</button>
       </form>
     </div>
 
     <div class="table-box">
-      <h3>الأذونات السابقة</h3>
+      <h3>أذونات الصرف السابقة</h3>
       <table>
-        <tr><th>رقم الإذن</th><th>التاريخ</th><th>الجهة</th><th>إجراء</th></tr>
+        <tr><th>رقم الإذن (EKIP-TR)</th><th>التاريخ</th><th>الجهة الطالبة</th><th>إجراء</th></tr>
         {% for v in vouchers %}
         <tr>
-          <td>{{ v.voucher_no }}</td>
+          <td><b style="color: #1e3a8a;">{{ v.voucher_no }}</b></td>
           <td>{{ v.voucher_date }}</td>
-          <td>{{ v.dept_name }}</td>
+          <td>{{ v.department }}</td>
           <td>
-              <a href="{{ url_for('print_issue', voucher_id=v.id) }}" target="_blank" class="print-link" title="طباعة"><i class="fa-solid fa-print"></i></a>
-              <a href="{{ url_for('delete_issue', voucher_id=v.id) }}" class="print-link" style="color: #e74c3c; margin-right: 8px;" onclick="return confirm('هل أنت متأكد من حذف هذا الإذن؟');" title="حذف"><i class="fa-solid fa-trash"></i></a>
+              <a href="{{ url_for('print_issue', voucher_id=v.id) }}" target="_blank" class="print-link me-2" title="طباعة الإذن الرسمي"><i class="fa-solid fa-print"></i></a>
+              <a href="{{ url_for('delete_issue', voucher_id=v.id) }}" class="print-link" style="color: #e74c3c; margin-right: 10px;" onclick="return confirm('هل أنت متأكد من حذف هذا الإذن؟');" title="حذف"><i class="fa-solid fa-trash"></i></a>
           </td>
         </tr>
         {% else %}
-        <tr><td colspan="4" style="text-align:center; color: #a0aec0;">لا توجد أذونات سابقة</td></tr>
+        <tr><td colspan="4" style="text-align:center; color: #666;">لا توجد أذونات صرف سابقة</td></tr>
         {% endfor %}
       </table>
     </div>
@@ -160,11 +160,11 @@
         <select name="item_id[]" class="item-select" required>
           <option value="">-- اختر الصنف --</option>
           {% for item in items %}
-          <option value="{{ item.id }}" data-category="{{ item.category }}">{{ item.name }}</option>
+          <option value="{{ item.id }}" data-category="{{ item.category }}">{{ item.name }} ({{ item.unit }})</option>
           {% endfor %}
         </select>
-        <input type="number" step="0.01" name="qty[]" placeholder="الكمية" required>
-        <a href="{{ url_for('items') }}" target="_blank" class="add-new-btn" title="إضافة صنف جديد"><i class="fa-solid fa-plus"></i></a>
+        <input type="number" step="0.01" name="qty[]" placeholder="الكمية" required min="1">
+        <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('.item-row').remove();" style="height: 35px; background: #e74c3c; margin: 0;"><i class="fa-solid fa-trash"></i></button>
       `;
       
       container.appendChild(newRow);
