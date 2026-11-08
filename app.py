@@ -534,16 +534,88 @@ def print_purchase(voucher_id):
 @login_required(roles=['storekeeper'])
 def purchase_order():
     conn = get_db()
+    
+    # توليد رقم طلب شراء فريد تلقائياً بدون تكرار (مثال: PUR-001, PUR-002...)
+    last_po = conn.execute("SELECT invoice_no FROM purchase_vouchers WHERE invoice_no LIKE 'PUR-%' ORDER BY id DESC LIMIT 1").fetchone()
+    if last_po and last_po['invoice_no']:
+        try:
+            num = int(last_po['invoice_no'].split('-')[1]) + 1
+            auto_invoice_no = f"PUR-{num:03d}"
+        except:
+            auto_invoice_no = f"PUR-{random.randint(100,999)}"
+    else:
+        auto_invoice_no = "PUR-001"
+
     items_list = conn.execute("SELECT * FROM items ORDER BY category, name").fetchall()
     categories = conn.execute("SELECT DISTINCT category FROM items ORDER BY category").fetchall()
-    conn.close()
+    
     if request.method == 'POST':
-        item_names, qtys, prices = request.form.getlist('item_name[]'), request.form.getlist('qty[]'), request.form.getlist('price[]')
-        carried_items_list = [{'name': item_names[i], 'qty': qtys[i], 'price': prices[i]} for i in range(len(item_names)) if item_names[i]]
-        session['carried_items'] = {'items': carried_items_list, 'supplier': request.form.get('supplier', '')}
-        flash("تم نقل البيانات بنجاح", "success")
-        return redirect(url_for('issue_order'))
-    return render_template('purchase_order.html', items=items_list, categories=categories, today=date.today().isoformat(), doc_title="نموذج إذن شراء / طلب توريد", is_purchase=True)
+        try:
+            voucher_date = request.form.get('voucher_date', date.today().isoformat())
+            supplier = request.form.get('supplier', 'عام')
+            invoice_no = request.form.get('invoice_no', auto_invoice_no)
+            receiver_name = request.form.get('receiver_name', '')
+            
+            # 1. حفظ إذن الشراء تلقائياً في purchase_vouchers
+            cur = conn.cursor()
+            cur.execute("""
+                INSERT INTO purchase_vouchers (voucher_no, voucher_date, supplier, invoice_no, receiver_name, created_by) 
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (invoice_no, voucher_date, supplier, invoice_no, receiver_name, session['user_id']))
+            vid = cur.lastrowid
+            
+            item_names = request.form.getlist('item_name[]')
+            qtys = request.form.getlist('qty[]')
+            prices = request.form.getlist('price[]')
+            
+            total_amount = 0
+            for i in range(len(item_names)):
+                if item_names[i] and float(qtys[i] or 0) > 0:
+                    itm_name = item_names[i]
+                    qty_val = float(qtys[i])
+                    price_val = float(prices[i] or 0)
+                    
+                    # البحث عن الصنف أو إضافته تلقائياً إذا لم يكن موجوداً
+                    item_rec = cur.execute("SELECT id FROM items WHERE name=?", (itm_name,)).fetchone()
+                    if item_rec:
+                        item_id = item_rec['id']
+                    else:
+                        item_id = cur.execute(
+                            "INSERT INTO items (code, name, unit, category) VALUES (?, ?, ?, ?)", 
+                            (f"GEN-{random.randint(1000,9999)}", itm_name, 'حبة', 'عام')
+                        ).lastrowid
+                    
+                    # إضافة سطر الشراء
+                    cur.execute("INSERT INTO purchase_lines (voucher_id, item_id, qty, price) VALUES (?, ?, ?, ?)", 
+                                (vid, item_id, qty_val, price_val))
+                    
+                    # تسجيل حركة المخزون (إدخال)
+                    cur.execute("""
+                        INSERT INTO stock_movements (item_id, move_type, qty, move_date, ref_type, ref_id, created_by) 
+                        VALUES (?, 'in', ?, ?, 'purchase', ?, ?)
+                    """, (item_id, qty_val, voucher_date, vid, session['user_id']))
+                    
+                    total_amount += qty_val * price_val
+            
+            # تسجيل المصروف المالي تلقائياً
+            if total_amount > 0:
+                cur.execute("""
+                    INSERT INTO expenses (description, amount, expense_date, category, payment_method, created_by) 
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """, (f"شراء توريد - {invoice_no}", total_amount, voucher_date, 'مصروفات', 'كاش', session['user_id']))
+            
+            conn.commit()
+            flash(f"تم حفظ طلب الشراء وتوليد الرقم التسلسلي ({invoice_no}) وتسجيل المصروف والمخزون بنجاح!", "success")
+            conn.close()
+            return redirect(url_for('purchase_order'))
+            
+        except Exception as e:
+            conn.close()
+            flash(f"حدث خطأ أثناء الحفظ: {e}", "danger")
+            return redirect(url_for('purchase_order'))
+            
+    conn.close()
+    return render_template('purchase_order.html', items=items_list, categories=categories, today=date.today().isoformat(), doc_title="نموذج إذن شراء / طلب توريد", is_purchase=True, auto_invoice_no=auto_invoice_no)
 
 @app.route('/issue_order', methods=['GET', 'POST'])
 @login_required(roles=['storekeeper'])
@@ -570,7 +642,7 @@ def issue_order():
     items_list = conn.execute("SELECT * FROM items ORDER BY category, name").fetchall()
     categories = conn.execute("SELECT DISTINCT category FROM items ORDER BY category").fetchall()
     conn.close()
-    return render_template('purchase_order.html', items=items_list, categories=categories, today=date.today().isoformat(), doc_title="أمر صرف مواد", is_purchase=False, carried_data=session.pop('carried_items', None))
+    return render_template('purchase_order.html', items=items_list, categories=categories, today=date.today().isoformat(), doc_title="أمر صرف مواد", is_purchase=False, carried_data=session.pop('carried_items', None), auto_invoice_no="")
 
 @app.route('/issue', methods=['GET', 'POST'])
 @login_required(roles=['storekeeper'])
