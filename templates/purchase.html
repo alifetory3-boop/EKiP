@@ -36,11 +36,16 @@
     th { background: #2c3e50; color: #fff; font-weight: 700; }
     
     .msg { padding: 8px; border-radius: 5px; text-align: center; margin-bottom: 10px; font-weight: 700; font-size: 13px; }
-    .success { background: rgba(39, 174, 96, 0.85); }
-    .danger { background: rgba(192, 57, 43, 0.85); }
+    .success { background: rgba(39, 174, 96, 0.85); color: white; }
+    .danger { background: rgba(192, 57, 43, 0.85); color: white; }
     
-    .action-link { color: #2980b9; text-decoration: none; font-size: 15px; margin: 0 4px; transition: 0.3s; }
-    .action-link:hover { color: #1d6fa5; }
+    .action-link { text-decoration: none; font-size: 14px; margin: 0 4px; padding: 4px 8px; border-radius: 4px; font-weight: bold; display: inline-flex; align-items: center; gap: 4px; transition: 0.3s; }
+    .btn-print { background: #2980b9; color: #fff; }
+    .btn-print:hover { background: #1f618d; }
+    .btn-edit { background: #f39c12; color: #fff; }
+    .btn-edit:hover { background: #d68910; }
+    .btn-delete { background: #e74c3c; color: #fff; }
+    .btn-delete:hover { background: #c0392b; }
   </style>
 </head>
 <body>
@@ -112,14 +117,26 @@
     <div class="table-box">
       <h3>طلبات الشراء السابقة</h3>
       <table>
-        <tr><th>رقم الطلب (EKIP-TK)</th><th>التاريخ</th><th>المورد</th><th>إجراءات</th></tr>
+        <tr>
+          <th>رقم الطلب (EKIP-TK)</th>
+          <th>التاريخ</th>
+          <th>المورد</th>
+          <th>إجراءات المستند والطباعة</th>
+        </tr>
         {% for v in vouchers %}
         <tr>
           <td><b style="color: #1e3a8a;">{{ v.voucher_no }}</b></td>
           <td>{{ v.voucher_date }}</td>
           <td>{{ v.supplier }}</td>
           <td>
-              <a href="{{ url_for('delete_purchase', voucher_id=v.id) }}" class="action-link" style="color: #e74c3c;" onclick="return confirm('هل أنت متأكد من حذف هذا الطلب؟');" title="حذف"><i class="fa-solid fa-trash"></i></a>
+              <!-- زر طباعة المستند الرسمي ورقة شركة أكيب -->
+              <a href="{{ url_for('print_items') }}?voucher_id={{ v.id }}" target="_blank" class="action-link btn-print" title="طباعة المستند الرسمي"><i class="fa-solid fa-print"></i> طباعة</a>
+              
+              <!-- زر تعديل الطلب -->
+              <a href="{{ url_for('items') }}" class="action-link btn-edit" title="تعديل الطلب"><i class="fa-solid fa-pen-to-square"></i> تعديل</a>
+              
+              <!-- زر حذف الطلب -->
+              <a href="{{ url_for('delete_purchase', voucher_id=v.id) }}" class="action-link btn-delete" onclick="return confirm('هل أنت متأكد من حذف هذا الطلب؟');" title="حذف"><i class="fa-solid fa-trash"></i> حذف</a>
           </td>
         </tr>
         {% else %}
