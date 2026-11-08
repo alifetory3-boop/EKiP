@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>محضر تسليم واستلام</title>
+    <title>محضر تسليم واستلام - شركة أكيب</title>
     <style>
         @page { size: A4; margin: 0; }
         body { font-family: 'Traditional Arabic', Tahoma, sans-serif; margin: 0; padding: 0; background: #fff; color: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -19,61 +19,63 @@
         }
 
         .header-title { text-align: center; margin-bottom: 15px; }
-        .header-title h2 { margin: 0; font-size: 20px; font-weight: bold; }
-        .header-title p { margin: 3px 0; font-size: 14px; }
+        .header-title h2 { margin: 0; font-size: 22px; font-weight: bold; color: #1e3a8a; }
+        .header-title p { margin: 3px 0; font-size: 14px; font-weight: bold; }
 
         .details { 
             display: flex; justify-content: space-between; flex-wrap: wrap;
-            margin-bottom: 10px; font-size: 14px; font-weight: bold; 
-            background: rgba(255, 255, 255, 0.6); padding: 5px; border-radius: 5px;
+            margin-bottom: 12px; font-size: 14px; font-weight: bold; 
+            background: rgba(255, 255, 255, 0.85); padding: 8px 12px; border-radius: 6px;
+            border: 1px solid #cbd5e1;
         }
-        .details div { width: 48%; margin-bottom: 5px; } 
+        .details div { width: 48%; margin-bottom: 6px; } 
 
         table { 
             width: 100%; border-collapse: collapse; 
-            background: rgba(255, 255, 255, 0.8); 
+            background: rgba(255, 255, 255, 0.9); 
             margin-bottom: auto; 
         }
-        th, td { border: 1px solid #000; padding: 4px 6px; text-align: center; font-size: 13px; height: auto; }
-        th { background: rgba(224, 224, 224, 0.9); font-weight: bold; }
+        th, td { border: 1px solid #000; padding: 6px 8px; text-align: center; font-size: 13px; height: auto; }
+        th { background: rgba(224, 224, 224, 0.95); font-weight: bold; }
         
         input[type="text"], input[type="number"], select { 
-            width: 95%; padding: 4px; text-align: center; font-size: 13px; 
-            border: 1px solid #ccc; border-radius: 3px; background: rgba(255,255,255,0.8); 
+            width: 95%; padding: 5px; text-align: center; font-size: 13px; 
+            border: 1px solid #cbd5e1; border-radius: 4px; background: rgba(255,255,255,0.95); 
+            font-family: 'Traditional Arabic', Tahoma, sans-serif;
         }
 
         .signatures { 
             display: flex; justify-content: space-between; 
-            text-align: center; font-size: 16px; font-weight: bold; 
+            text-align: center; font-size: 15px; font-weight: bold; 
             position: absolute;
             bottom: 100px; 
             left: 30px;
             right: 30px;
         }
         .sig-box { width: 30%; }
-        .sig-line { border-bottom: 1px solid #000; margin-top: 15px; } 
+        .sig-line { border-bottom: 1px solid #000; margin-top: 20px; } 
 
         @media print { .no-print { display: none; } }
     </style>
 </head>
 <body>
   <div class="no-print" style="text-align: center; margin-bottom: 10px; padding-top: 10px;">
-    <button onclick="window.print()" style="padding: 8px 20px; background: #27ae60; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer;">🖨️ طباعة / حفظ PDF بالترويسة الرسمية</button>
-    <a href="{{ url_for('dashboard') }}" style="margin-right: 15px; text-decoration: none; font-weight: bold; color: #2c3e50;">الرئيسية</a>
+    <button onclick="window.print()" style="padding: 8px 20px; background: #27ae60; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-family: 'Cairo', sans-serif; font-weight: bold;">🖨️ طباعة / حفظ PDF بالترويسة الرسمية</button>
+    <a href="{{ url_for('dashboard') }}" style="margin-right: 15px; text-decoration: none; font-weight: bold; color: #2c3e50; font-family: 'Cairo', sans-serif;">الرئيسية</a>
   </div>
 
   <div class="page">
     <div class="header-title">
-      <h2>محضر تسليم واستلام مواد</h2>
-      <p>مشروع انشاء مركب رياضي بالمرج[cite: 5]</p>
+      <h2>محضر تسليم واستلام مواد (Handover Minutes)</h2>
+      <p>مشروع إنشاء مركب رياضي بالمرج</p>
     </div>
 
     <form method="POST">
         <div class="details">
-          <div>التاريخ: <input type="date" name="voucher_date" value="{{ today }}"></div>
-          <div>رقم الإشاري: <input type="text" name="ref_no" placeholder="رقم الإشاري"></div>
-          <div>جهة التسليم: <input type="text" name="sender_name" placeholder="اسم المسلم"></div>
-          <div>جهة الاستلام: <input type="text" name="receiver_name" placeholder="اسم المستلم"></div>
+            <div>التاريخ: <input type="date" name="voucher_date" value="{{ today }}"></div>
+            <div>رقم الإشاري (EKIP-GO): <input type="text" name="ref_no" placeholder="رقم الإشاري التلقائي أو اليدوي" value="{{ auto_go }}"></div>
+            <div>جهة التسليم: <input type="text" name="sender_name" placeholder="اسم الطرف المسلم"></div>
+            <div>جهة الاستلام: <input type="text" name="receiver_name" placeholder="اسم الطرف المستلم"></div>
         </div>
 
         <table id="handoverTable">
@@ -107,7 +109,7 @@
         </table>
 
         <div class="no-print" style="margin-top: 10px;">
-            <button type="button" onclick="addRow()" style="padding: 6px 15px; background: #2980b9; color: white; border: none; border-radius: 4px; cursor: pointer;">+ إضافة صنف جديد</button>
+            <button type="button" onclick="addRow()" style="padding: 6px 15px; background: #2980b9; color: white; border: none; border-radius: 4px; cursor: pointer; font-family: 'Cairo', sans-serif; font-weight: bold;">+ إضافة صنف جديد</button>
         </div>
 
         <!-- التوقيعات -->
@@ -118,7 +120,7 @@
         </div>
 
         <div class="no-print" style="text-align: center; margin-top: 20px;">
-            <button type="submit" style="padding: 8px 20px; background: #27ae60; color: white; border: none; border-radius: 5px; font-size: 15px; cursor: pointer;">💾 حفظ المحضر</button>
+            <button type="submit" style="padding: 10px 25px; background: #27ae60; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-family: 'Cairo', sans-serif; font-weight: bold;">💾 حفظ المحضر وتوليد التسلسل</button>
         </div>
     </form>
   </div>
