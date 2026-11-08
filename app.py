@@ -156,6 +156,11 @@ def dashboard():
     conn.close()
     return render_template('dashboard.html', items_count=items_count, balances=balances, low_stock=[b for b in balances if b['balance'] < b['min_qty']])
 
+@app.route('/issue')
+@login_required()
+def issue():
+    return redirect(url_for('items'))
+
 @app.route('/equipment_out')
 @login_required()
 def equipment_out():
