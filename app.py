@@ -3,7 +3,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from database import get_db, init_db
 from functools import wraps
 from datetime import date, datetime
-import random
 
 app = Flask(__name__)
 app.secret_key = "secret-key-123"
@@ -14,8 +13,65 @@ def inject_now():
 
 init_db()
 
+# إنشاء الجداول الأساسية وضمان جاهزيتها
 conn = get_db()
-conn.execute("""
+conn.executescript("""
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    full_name TEXT NOT NULL,
+    role TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    code TEXT UNIQUE NOT NULL,
+    name TEXT NOT NULL,
+    unit TEXT NOT NULL,
+    min_qty REAL DEFAULT 0,
+    category TEXT DEFAULT 'عام'
+);
+
+CREATE TABLE IF NOT EXISTS purchase_vouchers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    voucher_no TEXT UNIQUE NOT NULL,
+    voucher_date TEXT NOT NULL,
+    supplier TEXT NOT NULL,
+    invoice_no TEXT,
+    receiver_name TEXT,
+    created_by INTEGER
+);
+
+CREATE TABLE IF NOT EXISTS purchase_lines (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    voucher_id INTEGER,
+    item_id INTEGER,
+    qty REAL NOT NULL,
+    price REAL NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS stock_movements (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    item_id INTEGER,
+    move_type TEXT,
+    qty REAL,
+    move_date TEXT,
+    ref_type TEXT,
+    ref_id INTEGER,
+    created_by INTEGER
+);
+
+CREATE TABLE IF NOT EXISTS expenses (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    description TEXT,
+    amount REAL,
+    expense_date TEXT,
+    category TEXT,
+    payment_method TEXT,
+    created_by INTEGER
+);
+
 CREATE TABLE IF NOT EXISTS user_activity_log (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER,
@@ -24,10 +80,8 @@ CREATE TABLE IF NOT EXISTS user_activity_log (
     action TEXT,
     details TEXT,
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-)
-""")
+);
 
-conn.execute("""
 CREATE TABLE IF NOT EXISTS advanced_salaries (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     employee_name TEXT NOT NULL,
@@ -37,24 +91,43 @@ CREATE TABLE IF NOT EXISTS advanced_salaries (
     advance REAL DEFAULT 0.0,
     bonus_receipt_type TEXT DEFAULT 'separate',
     month_year TEXT NOT NULL
-)
-""")
+);
 
-conn.execute("""
 CREATE TABLE IF NOT EXISTS employees (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     default_salary REAL DEFAULT 0.0
-)
-""")
+);
 
-conn.execute("""
 CREATE TABLE IF NOT EXISTS system_counters (
     prefix_key TEXT PRIMARY KEY,
     next_val INTEGER DEFAULT 2
-)
+);
 """)
 conn.commit()
+
+# إدراج مستخدم مدير افتراضي إذا لم يكن موجوداً
+if conn.execute("SELECT COUNT(*) FROM users").fetchone()[0] == 0:
+    conn.execute("INSERT INTO users (username, password_hash, full_name, role) VALUES (?, ?, ?, ?)", 
+                 ('admin', generate_password_hash('admin123'), 'مدير النظام', 'admin'))
+    conn.commit()
+
+# إدراج أصناف افتراضية تلقائياً لضمان عدم ظهور القوائم فارغة أبداً
+if conn.execute("SELECT COUNT(*) FROM items").fetchone()[0] == 0:
+    default_items = [
+        ("BL-01", "حديد تسليح 12 مم", "طن", 5, "مواد بناء"),
+        ("BL-02", "أسمنت بورتلاندي", "كيس", 20, "مواد بناء"),
+        ("EL-01", "سلك كهرباء 3 ملي", "لفة", 10, "كهرباء"),
+        ("PL-01", "بوري بلاستيك 4 بوصة", "قطعة", 15, "سباكة"),
+        ("SF-01", "خوذة سلامة ووقاية", "قطعة", 5, "سلامة"),
+        ("TL-01", "مطرقة بناء", "قطعة", 2, "أدوات")
+    ]
+    for code, name, unit, min_qty, cat in default_items:
+        conn.execute("INSERT OR IGNORE INTO items (code, name, unit, min_qty, category) VALUES (?, ?, ?, ?, ?)", 
+                     (code, name, unit, min_qty, cat))
+    conn.commit()
+
+conn.close()
 
 def get_next_sequence(prefix):
     db = get_db()
@@ -82,37 +155,6 @@ def log_activity(action, details=""):
         db.commit()
     except Exception as e:
         print("خطأ في تسجيل الحركة:", e)
-
-if conn.execute("SELECT COUNT(*) FROM users").fetchone()[0] == 0:
-    conn.execute("INSERT INTO users (username, password_hash, full_name, role) VALUES (?, ?, ?, ?)", 
-                 ('admin', generate_password_hash('admin123'), 'مدير النظام', 'admin'))
-    conn.commit()
-
-if conn.execute("SELECT COUNT(*) FROM employees").fetchone()[0] == 0:
-    initial_employees = [
-        ("ابراهيم محمد ابراهيم", 1500), ("احمد صلاح موسي", 3000), ("اسماعيل يونس محمد ادم", 2500),
-        ("اسماعيل ادم هارون", 4500), ("اشرف عبد العالي الشلماني", 3000), ("السيد خالد عبدالستار", 3340),
-        ("السيد فتحي سيد محمد", 2000), ("الهادي حسين محمد", 1500), ("برعي ابوبكر داوود", 1500),
-        ("بشر محمد بشرساكن", 4785), ("جاد كريم عبد الوهاب", 4000), ("جلال احمد المسمار", 3000),
-        ("جميل محمد ابراهيم", 2000), ("حسان محمد حسان", 1500), ("حسن حسان محمد", 1500),
-        ("حمدي محمد سعيد", 4500), ("حمزة محمد العرفي", 1500), ("حنين عبد المنعم خالد", 2500),
-        ("خالد آدم آدم", 4500), ("رجب محمد حسين", 4500), ("سليمان لازم جير الله", 2645),
-        ("سيف الاسلام المبروك براهيم", 1935), ("ضيمن فيصل السيد", 4500), ("عادل ابوبكر آدم", 2000),
-        ("عادل صلاح السيد", 5500), ("عامر سالم محمد ابوبكر", 4000), ("عبد الحليم عيسي", 4500),
-        ("عبد العزيز القوارشة", 6775), ("عبد الكريم شيخ الدين محمد", 3500), ("عبد المنعم خميس ابوبكر", 1500),
-        ("عطية صالح عطية الحمر", 2000), ("علاء الدين هارون", 2500), ("علاء السيد دياب", 3340),
-        ("علي امبارك علي", 3000), ("علي محمد حسين موسي", 3000), ("عمر ابراهيم محمد", 2500),
-        ("فتح الله ضو عبد الله", 3500), ("فرج المنصور فرج", 3000), ("محمد ابراهيم حسن", 2500),
-        ("محمد ابراهیم آدم", 2000), ("محمد احمد جودات", 1500), ("محمد البركي", 1935),
-        ("محمد خضر طافور", 4500), ("محمد عبدالله الحاج", 4500), ("محمد عثمان بخيث", 1500),
-        ("محمد عمر حمدي", 2670), ("محمود محمد عبد الحميد", 4000), ("مصطفي عمر البوسيفي", 5645),
-        ("مندر ابراهيم", 3970), ("مهند اسماعيل محمد", 1500)
-    ]
-    for emp in initial_employees:
-        conn.execute("INSERT INTO employees (name, default_salary) VALUES (?, ?)", emp)
-    conn.commit()
-
-conn.close()
 
 def login_required(roles=None):
     def decorator(f):
