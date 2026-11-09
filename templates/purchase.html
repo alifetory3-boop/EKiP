@@ -82,10 +82,10 @@
         <!-- عرض الأكواد الأربعة المتسلسلة تلقائياً -->
         <div class="alert alert-info py-2 px-3 mb-3" style="background: rgba(13, 202, 240, 0.15); border: 1px solid #0dcaf0; color: #fff; font-size: 13px; border-radius: 8px;">
           <strong>الأكواد التسلسلية المصدرة تلقائياً لهذه العملية:</strong><br>
-          <span class="badge bg-primary me-2">طلب الشراء (EKIP-TK): <b>{{ auto_tk | default('EKIP-TK-001') }}</b></span>
-          <span class="badge bg-info text-dark me-2">إذن التسليم (EKIP-TR): <b>{{ auto_tr | default('EKIP-TR-001') }}</b></span>
-          <span class="badge bg-success me-2">رقم الإشاري (EKIP-GO): <b>{{ auto_go | default('EKIP-GO-001') }}</b></span>
-          <span class="badge bg-warning text-dark">رقم النموذج (EKIP-TM): <b>{{ auto_tm | default('EKIP-TM-001') }}</b></span>
+          <span class="badge bg-primary me-2">طلب الشراء (EKIP-TK): <b>{{ auto_tk }}</b></span>
+          <span class="badge bg-info text-dark me-2">إذن التسليم (EKIP-TR): <b>{{ auto_tr }}</b></span>
+          <span class="badge bg-success me-2">رقم الإشاري (EKIP-GO): <b>{{ auto_go }}</b></span>
+          <span class="badge bg-warning text-dark">رقم النموذج (EKIP-TM): <b>{{ auto_tm }}</b></span>
         </div>
         
         <h4 style="margin-top: 15px; color: #4facfe; font-size: 15px; text-align: center; margin-bottom: 10px;">بنود الأصناف والمواد:</h4>
@@ -95,16 +95,9 @@
             <!-- القسم -->
             <select name="category_filter[]" class="category-select" onchange="filterItems(this)">
               <option value="">-- القسم --</option>
-              {% if categories %}
-                {% for cat in categories %}
-                <option value="{{ cat.category }}">{{ cat.category }}</option>
-                {% endfor %}
-              {% else %}
-                <option value="عام">عام</option>
-                <option value="مواد بناء">مواد بناء</option>
-                <option value="كهرباء">كهرباء</option>
-                <option value="سباكة">سباكة</option>
-              {% endif %}
+              {% for cat in categories %}
+              <option value="{{ cat }}">{{ cat }}</option>
+              {% endfor %}
             </select>
             
             <!-- الصنف -->
@@ -115,7 +108,7 @@
                 <option value="{{ item.id }}" data-category="{{ item.category }}">{{ item.name }} ({{ item.unit }})</option>
                 {% endfor %}
               {% else %}
-                <option value="">لا توجد أصناف مضافة (يرجى إضافتها من إدارة المخزون)</option>
+                <option value="" disabled>لا توجد أصناف مضافة (يرجى إضافتها من إدارة المخزون)</option>
               {% endif %}
             </select>
             
@@ -200,7 +193,7 @@
         <select name="category_filter[]" class="category-select" onchange="filterItems(this)">
           <option value="">-- القسم --</option>
           {% for cat in categories %}
-          <option value="{{ cat.category }}">{{ cat.category }}</option>
+          <option value="{{ cat }}">{{ cat }}</option>
           {% endfor %}
         </select>
         <select name="item_id[]" class="item-select" required>
