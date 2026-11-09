@@ -117,10 +117,10 @@
 
   <div class="page">
     {% if form_type == 'uploaded' %}
-      <!-- نموذج الملف المرفوع المستخرج تلقائياً -->
+      <!-- نموذج الملف المرفوع الأصلي للطباعة -->
       <div class="header-title">
-        <h2>نموذج مستخرج من ملف مرفوع</h2>
-        <p>الملف: {% if uploaded_data %}{{ uploaded_data.filename }}{% else %}لا يوجد ملف حالياً{% endif %}</p>
+        <h2>{{ uploaded_data.filename if uploaded_data else 'نموذج مستخرج من ملف مرفوع' }}</h2>
+        <p>مشروع إنشاء مركب رياضي بالمرج</p>
       </div>
 
       <div class="details">
@@ -129,30 +129,34 @@
       </div>
 
       <table>
-        <thead>
-          <tr>
-            <th style="width: 10%;">م</th>
-            <th style="width: 50%;">اسم الصنف / البيان</th>
-            <th style="width: 20%;">الوحدة</th>
-            <th style="width: 20%;">الكمية</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% if uploaded_data and uploaded_data.data %}
+        {% if uploaded_data and uploaded_data.headers %}
+          <thead>
+            <tr>
+              <th style="width: 6%;">م</th>
+              {% for header in uploaded_data.headers %}
+                <th>{{ header }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
             {% for row in uploaded_data.data %}
             <tr>
               <td>{{ loop.index }}</td>
-              <td style="text-align: right; padding-right: 10px;"><span class="editable" contenteditable="true" style="width: 100%;">{{ row.name }}</span></td>
-              <td><span class="editable" contenteditable="true">{{ row.unit }}</span></td>
-              <td><span class="editable" contenteditable="true">{{ row.qty }}</span></td>
+              {% for cell in row %}
+                <td style="text-align: right; padding-right: 10px;"><span class="editable" contenteditable="true" style="width: 100%;">{{ cell }}</span></td>
+              {% endfor %}
             </tr>
             {% endfor %}
-          {% else %}
+          </tbody>
+        {% else %}
+          <tbody>
             <tr>
-              <td colspan="4" style="text-align: center; padding: 20px;">يرجى رفع ملف Word (.docx) أو Excel (.xlsx) من لوحة التحكم لعرض محتواه هنا.</td>
+              <td style="text-align: center; padding: 30px; font-weight: bold;">
+                يرجى رفع ملف Word (.docx) أو Excel (.xlsx) من لوحة التحكم لعرض محتواه وطباعته بنفس تنسيقه الأصلي.
+              </td>
             </tr>
-          {% endif %}
-        </tbody>
+          </tbody>
+        {% endif %}
       </table>
 
       <div class="signatures">
