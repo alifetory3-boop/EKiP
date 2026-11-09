@@ -487,7 +487,6 @@ def purchase():
     items_list = conn.execute("SELECT * FROM items ORDER BY name").fetchall()
     vouchers = conn.execute("SELECT * FROM purchase_vouchers ORDER BY id DESC LIMIT 10").fetchall()
     
-    # جلب الأقسام بوضوح لضمان ظهورها في القائمة المنسدلة
     cat_rows = conn.execute("SELECT DISTINCT category FROM items WHERE category IS NOT NULL AND category != ''").fetchall()
     categories = [row['category'] for row in cat_rows]
     if not categories:
@@ -509,6 +508,16 @@ def print_purchase(voucher_id):
     lines = conn.execute("SELECT i.code, i.name, i.unit, pl.qty, pl.price FROM purchase_lines pl JOIN items i ON pl.item_id = i.id WHERE pl.voucher_id=?", (voucher_id,)).fetchall()
     conn.close()
     return render_template('print_purchase.html', voucher=voucher, lines=lines)
+
+# مسار ديناميكي جديد لطباعة وتعديل النماذج حسب الاختيار
+@app.route('/print_dynamic_form', methods=['GET'])
+@login_required(roles=['storekeeper'])
+def print_dynamic_form():
+    form_type = request.args.get('type', 'purchase')
+    conn = get_db()
+    items_list = conn.execute("SELECT * FROM items ORDER BY name").fetchall()
+    conn.close()
+    return render_template('print_dynamic.html', form_type=form_type, items=items_list, today=date.today().isoformat())
 
 @app.route('/transfer_purchase_to_issue/<int:voucher_id>')
 @login_required(roles=['storekeeper'])
