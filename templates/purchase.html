@@ -94,7 +94,7 @@
           <div class="row-item item-row">
             <!-- القسم -->
             <select name="category_filter[]" class="category-select" onchange="filterItems(this)">
-              <option value="">-- القسم --</option>
+              <option value="">-- كل الأقسام --</option>
               {% for cat in categories %}
               <option value="{{ cat }}">{{ cat }}</option>
               {% endfor %}
@@ -105,7 +105,7 @@
               <option value="">-- اختر الصنف --</option>
               {% if items %}
                 {% for item in items %}
-                <option value="{{ item.id }}" data-category="{{ item.category }}">{{ item.name }} ({{ item.unit }})</option>
+                <option value="{{ item.id }}" data-category="{{ item.category | trim }}">{{ item.name }} ({{ item.unit }}) - [{{ item.category }}]</option>
                 {% endfor %}
               {% else %}
                 <option value="" disabled>لا توجد أصناف مضافة (يرجى إضافتها من إدارة المخزون)</option>
@@ -170,13 +170,14 @@
     function filterItems(catSelect) {
       const row = catSelect.closest('.item-row');
       const itemSelect = row.querySelector('.item-select');
-      const selectedCategory = catSelect.value;
+      const selectedCategory = catSelect.value.trim();
       const options = itemSelect.querySelectorAll('option');
 
       itemSelect.value = ""; 
       options.forEach(option => {
         if (option.value === "") return;
-        if (selectedCategory === "" || option.getAttribute('data-category') === selectedCategory) {
+        const itemCategory = (option.getAttribute('data-category') || "").trim();
+        if (selectedCategory === "" || itemCategory === selectedCategory) {
           option.style.display = '';
         } else {
           option.style.display = 'none';
@@ -191,7 +192,7 @@
       
       newRow.innerHTML = `
         <select name="category_filter[]" class="category-select" onchange="filterItems(this)">
-          <option value="">-- القسم --</option>
+          <option value="">-- كل الأقسام --</option>
           {% for cat in categories %}
           <option value="{{ cat }}">{{ cat }}</option>
           {% endfor %}
@@ -199,7 +200,7 @@
         <select name="item_id[]" class="item-select" required>
           <option value="">-- اختر الصنف --</option>
           {% for item in items %}
-          <option value="{{ item.id }}" data-category="{{ item.category }}">{{ item.name }} ({{ item.unit }})</option>
+          <option value="{{ item.id }}" data-category="{{ item.category | trim }}">{{ item.name }} ({{ item.unit }}) - [{{ item.category }}]</option>
           {% endfor %}
         </select>
         <input type="number" step="0.01" name="qty[]" placeholder="الكمية" value="1" min="0.01" oninput="calcTotal(this)" required>
