@@ -1,4 +1,5 @@
 import sqlite3
+import os
 
 def get_db():
     conn = sqlite3.connect('database.db')
@@ -113,6 +114,15 @@ def init_db():
                     pay_date TEXT NOT NULL,
                     created_by INTEGER)''')
 
+    # جدول الأرشيف والمستندات المرفوعة (دعم ملفات Word و Excel)
+    conn.execute('''CREATE TABLE IF NOT EXISTS uploaded_documents (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    filename TEXT NOT NULL,
+                    original_name TEXT NOT NULL,
+                    file_type TEXT NOT NULL,
+                    upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    uploaded_by INTEGER)''')
+
     # التأكد من إضافة الأعمدة الجديدة (الحالة والخصومات) إذا لم تكن موجودة مسبقاً في الجدول القديم
     try:
         conn.execute("ALTER TABLE salary_payments ADD COLUMN status TEXT DEFAULT 'منتظم'")
@@ -216,7 +226,7 @@ def init_db():
             ('EL-05', 'مقبس كهرباء', 'حبة', 15, 'كهرباء'),
             ('EL-06', 'قاطع كهربائي', 'حبة', 5, 'كهرباء'),
 
-            # مكتبية
+         # مكتبية
             ('OF-01', 'ورق طباعة A4', 'رزمة', 10, 'مكتبية'),
             ('OF-02', 'أقلام جاف', 'علبة', 5, 'مكتبية'),
             ('OF-03', 'ملفات بلاستيك', 'حبة', 20, 'مكتبية'),
