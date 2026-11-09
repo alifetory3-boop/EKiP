@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>النظام الإلكتروني الموحد - الطباعة الذكية</title>
+  <style>
+    @page { size: A4; margin: 0; }
+    body { font-family: 'Traditional Arabic', Tahoma, sans-serif; margin: 0; padding: 0; background: #f8fafc; color: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    
+    .no-print {
+      background: #0f2027;
+      padding: 15px;
+      text-align: center;
+      color: #fff;
+      font-family: 'Cairo', sans-serif;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .no-print select {
+      padding: 8px 15px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      margin-right: 10px;
+      font-family: 'Cairo', sans-serif;
+      font-weight: bold;
+    }
+    .no-print button {
+      padding: 9px 20px;
+      background: #27ae60;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      font-family: 'Cairo', sans-serif;
+      font-weight: bold;
+      margin-right: 10px;
+    }
+
+    .page {
+      width: 210mm; height: 297mm;
+      background: #fff url('{{ url_for("static", filename="letterhead.png") }}') no-repeat center top;
+      background-size: cover;
+      position: relative;
+      padding: 180px 25px 100px 25px; 
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      margin: 20px auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .header-title { text-align: center; margin-bottom: 15px; }
+    .header-title h2 { margin: 0; font-size: 22px; font-weight: bold; color: #1e3a8a; }
+    .header-title p { margin: 3px 0; font-size: 14px; font-weight: bold; }
+
+    .details { 
+      display: flex; justify-content: space-between; flex-wrap: wrap;
+      margin-bottom: 12px; font-size: 14px; font-weight: bold; 
+      background: rgba(255, 255, 255, 0.85); padding: 8px 12px; border-radius: 6px;
+      border: 1px solid #cbd5e1;
+    }
+    .details div { width: 48%; margin-bottom: 5px; } 
+
+    table { 
+      width: 100%; border-collapse: collapse; 
+      background: rgba(255, 255, 255, 0.9); 
+      margin-bottom: auto; 
+    }
+    th, td { border: 1px solid #000; padding: 6px 8px; text-align: center; font-size: 14px; height: auto; }
+    th { background: rgba(224, 224, 224, 0.95); font-weight: bold; }
+
+    /* حقول قابلة للتعديل إلكترونياً على الشاشة وتصبح مخفية الحدود عند الطباعة */
+    .editable {
+      border: 1px dashed #3498db;
+      background: rgba(52, 152, 219, 0.05);
+      padding: 2px 5px;
+      border-radius: 4px;
+      outline: none;
+      display: inline-block;
+      min-width: 30px;
+    }
+
+    /* التوقيعات */
+    .signatures { 
+      display: flex; justify-content: space-between; 
+      text-align: center; font-size: 15px; font-weight: bold; 
+      position: absolute;
+      bottom: 100px;
+      left: 30px;
+      right: 30px;
+    }
+    .sig-box { width: 30%; }
+    .sig-line { border-bottom: 1px solid #000; margin-top: 20px; } 
+
+    @media print { 
+      .no-print { display: none; } 
+      .page { margin: 0; box-shadow: none; }
+      .editable { border: none !important; background: transparent !important; padding: 0 !important; }
+    }
+  </style>
+  <script>
+    function changeFormType(val) {
+      window.location.href = "{{ url_for('print_dynamic_form') }}?type=" + val;
+    }
+  </script>
+</head>
+<body>
+  <!-- شريط التحكم العلوي لاختيار النموذج والطباعة -->
+  <div class="no-print">
+    <label for="formSelect" style="font-weight: bold; margin-left: 5px;">اختر النموذج:</label>
+    <select id="formSelect" onchange="changeFormType(this.value)">
+      <option value="purchase" {% if form_type == 'purchase' %}selected{% endif %}>طلب شراء مواد (Material Requisition)</option>
+      <option value="issue" {% if form_type == 'issue' %}selected{% endif %}>إذن صرف مواد (Store Material SMR)</option>
+    </select>
+    <button onclick="window.print()">🖨️ طباعة / حفظ PDF</button>
+  </div>
+
+  <div class="page">
+    {% if form_type == 'purchase' %}
+      <!-- نموذج طلب شراء مواد -->
+      <div class="header-title">
+        <h2>طلب شراء مواد (Material Requisition Form)</h2>
+        <p>مشروع إنشاء مركب رياضي بالمرج</p>
+      </div>
+
+      <div class="details">
+        <div>التاريخ: <span class="editable" contenteditable="true">{{ today }}</span></div>
+        <div>رقم طلب الشراء (RFP): <span style="color: #1e3a8a;" class="editable" contenteditable="true">EKIP-TK-001</span></div>
+        <div>المورد / الجهة: <span class="editable" contenteditable="true">مورد عام</span></div>
+        <div>اسم المستلم: <span class="editable" contenteditable="true">-</span></div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 8%;">م</th>
+            <th style="width: 42%;">البيان (الوصف)</th>
+            <th style="width: 15%;">الوحدة</th>
+            <th style="width: 15%;">الكمية</th>
+            <th style="width: 20%;">ملاحظات</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in items[:6] %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td style="text-align: right; padding-right: 10px;"><span class="editable" contenteditable="true" style="width: 100%;">{{ item.name }}</span></td>
+            <td><span class="editable" contenteditable="true">{{ item.unit }}</span></td>
+            <td><span class="editable" contenteditable="true">1</span></td>
+            <td><span class="editable" contenteditable="true" style="width: 100%;"></span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <div class="signatures">
+        <div class="sig-box"><p>طالب المواد</p><div class="sig-line"></div></div>
+        <div class="sig-box"><p>أمين المستودع</p><div class="sig-line"></div></div>
+        <div class="sig-box"><p>منسق المشروعات / الاعتماد</p><div class="sig-line"></div></div>
+      </div>
+
+    {% else %}
+      <!-- نموذج إذن صرف مواد -->
+      <div class="header-title">
+        <h2>إذن صرف وتسليم مواد (Store Material Requisition - SMR)</h2>
+        <p>مشروع إنشاء مركب رياضي بالمرج</p>
+      </div>
+
+      <div class="details">
+        <div>التاريخ: <span class="editable" contenteditable="true">{{ today }}</span></div>
+        <div>رقم إذن التسليم (EKIP-TR): <span style="color: #1e3a8a;" class="editable" contenteditable="true">EKIP-TR-001</span></div>
+        <div>الجهة الطالبة / القسم: <span class="editable" contenteditable="true">الموقع العام</span></div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 10%;">م</th>
+            <th style="width: 50%;">اسم الصنف / البيان</th>
+            <th style="width: 20%;">الوحدة</th>
+            <th style="width: 20%;">الكمية</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in items[:6] %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td style="text-align: right; padding-right: 10px;"><span class="editable" contenteditable="true" style="width: 100%;">{{ item.name }}</span></td>
+            <td><span class="editable" contenteditable="true">{{ item.unit }}</span></td>
+            <td><span class="editable" contenteditable="true">1</span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <div class="signatures" style="width: 80% !important; left: 10% !important; right: 10% !important;">
+        <div class="sig-box" style="width: 45%;"><p>المسلم (أمين المستودع)</p><div class="sig-line"></div></div>
+        <div class="sig-box" style="width: 45%;"><p>المستلم (الجهة الطالبة)</p><div class="sig-line"></div></div>
+      </div>
+    {% endif %}
+  </div>
+</body>
+</html>
