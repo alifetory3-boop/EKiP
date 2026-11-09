@@ -487,12 +487,12 @@ def purchase():
     items_list = conn.execute("SELECT * FROM items ORDER BY name").fetchall()
     vouchers = conn.execute("SELECT * FROM purchase_vouchers ORDER BY id DESC LIMIT 10").fetchall()
     
-    # جلب الأقسام من الجدول مع ضمان وجود أقسام افتراضية في حال خلو الجدول
-    categories = conn.execute("SELECT DISTINCT category FROM items").fetchall()
+    # جلب الأقسام بوضوح لضمان ظهورها في القائمة المنسدلة
+    cat_rows = conn.execute("SELECT DISTINCT category FROM items WHERE category IS NOT NULL AND category != ''").fetchall()
+    categories = [row['category'] for row in cat_rows]
     if not categories:
-        categories = [{'category': 'عام'}, {'category': 'مواد بناء'}, {'category': 'كهرباء'}, {'category': 'سباكة'}]
+        categories = ['عام', 'مواد بناء', 'كهرباء', 'سباكة']
 
-    # توليد الأكواد الأربعة التسلسلية الموحدة لشركة أكيب لعرضها في القالب
     auto_tk = f"EKIP-TK-{get_next_sequence('TK'):03d}"
     auto_tr = f"EKIP-TR-{get_next_sequence('TR'):03d}"
     auto_go = f"EKIP-GO-{get_next_sequence('GO'):03d}"
