@@ -553,17 +553,15 @@ def upload_document():
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
         
-        extracted_data = []
+        headers = []
+        rows_data = []
         
         if file_ext == 'xlsx':
             try:
                 df = pd.read_excel(filepath)
+                headers = [str(col) for col in df.columns]
                 for index, row in df.iterrows():
-                    extracted_data.append({
-                        'name': str(row.iloc[0]) if len(row) > 0 else '',
-                        'unit': str(row.iloc[1]) if len(row) > 1 else 'حبة',
-                        'qty': str(row.iloc[2]) if len(row) > 2 else '1'
-                    })
+                    rows_data.append([str(val) if pd.notna(val) else '' for val in row.values])
             except Exception as e:
                 flash(f'خطأ في قراءة ملف الأكسيل: {e}', 'danger')
                 return redirect(url_for('purchase'))
@@ -572,29 +570,25 @@ def upload_document():
             try:
                 doc = Document(filepath)
                 for table in doc.tables:
-                    for row in table.rows:
+                    for i, row in enumerate(table.rows):
                         row_cells = [cell.text.strip() for cell in row.cells]
-                        if len(row_cells) >= 1:
-                            extracted_data.append({
-                                'name': row_cells[0],
-                                'unit': row_cells[1] if len(row_cells) > 1 else 'حبة',
-                                'qty': row_cells[2] if len(row_cells) > 2 else '1'
-                            })
-                if not extracted_data:
+                        if i == 0:
+                            headers = row_cells
+                        else:
+                            rows_data.append(row_cells)
+                if not headers and not rows_data:
+                    headers = ['محتوى المستند']
                     for para in doc.paragraphs:
                         if para.text.strip():
-                            extracted_data.append({
-                                'name': para.text.strip(),
-                                'unit': 'حبة',
-                                'qty': '1'
-                            })
+                            rows_data.append([para.text.strip()])
             except Exception as e:
                 flash(f'خطأ في قراءة ملف الوورد: {e}', 'danger')
                 return redirect(url_for('purchase'))
 
         session['uploaded_form_data'] = {
             'filename': file.filename,
-            'data': extracted_data
+            'headers': headers,
+            'data': rows_data
         }
         
         conn = get_db()
@@ -603,8 +597,8 @@ def upload_document():
         conn.commit()
         conn.close()
         
-        log_activity("رفع مستند واستيراد", f"تم رفع الملف واستخراج محتواه: {file.filename}")
-        flash(f'تم رفع واستيراد وعرض محتوى الملف ({file.filename}) بنجاح!', 'success')
+        log_activity("رفع مستند طباعة", f"تم رفع الملف وتجهيزه للطباعة: {file.filename}")
+        flash(f'تم رفع الملف ({file.filename}) وتجهيزه للطباعة بنجاح!', 'success')
         return redirect(url_for('print_dynamic_form', type='uploaded'))
     else:
         flash('صيغة الملف غير مقبولة. يرجى رفع ملفات Word (.docx) أو Excel (.xlsx) فقط', 'danger')
