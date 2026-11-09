@@ -70,7 +70,6 @@
     th, td { border: 1px solid #000; padding: 6px 8px; text-align: center; font-size: 14px; height: auto; }
     th { background: rgba(224, 224, 224, 0.95); font-weight: bold; }
 
-    /* حقول قابلة للتعديل إلكترونياً على الشاشة وتصبح مخفية الحدود عند الطباعة */
     .editable {
       border: 1px dashed #3498db;
       background: rgba(52, 152, 219, 0.05);
@@ -81,7 +80,6 @@
       min-width: 30px;
     }
 
-    /* التوقيعات */
     .signatures { 
       display: flex; justify-content: space-between; 
       text-align: center; font-size: 15px; font-weight: bold; 
@@ -112,12 +110,52 @@
     <select id="formSelect" onchange="changeFormType(this.value)">
       <option value="purchase" {% if form_type == 'purchase' %}selected{% endif %}>طلب شراء مواد (Material Requisition)</option>
       <option value="issue" {% if form_type == 'issue' %}selected{% endif %}>إذن صرف مواد (Store Material SMR)</option>
+      <option value="uploaded" {% if form_type == 'uploaded' %}selected{% endif %}>📄 المستند المرفوع (Word / Excel)</option>
     </select>
     <button onclick="window.print()">🖨️ طباعة / حفظ PDF</button>
   </div>
 
   <div class="page">
-    {% if form_type == 'purchase' %}
+    {% if form_type == 'uploaded' and uploaded_data %}
+      <!-- نموذج الملف المرفوع المستخرج تلقائياً -->
+      <div class="header-title">
+        <h2>نموذج مستخرج من ملف مرفوع</h2>
+        <p>الملف: {{ uploaded_data.filename }}</p>
+      </div>
+
+      <div class="details">
+        <div>التاريخ: <span class="editable" contenteditable="true">{{ today }}</span></div>
+        <div>اسم المشروع: <span class="editable" contenteditable="true">مشروع المركب الرياضي بالمرج</span></div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 10%;">م</th>
+            <th style="width: 50%;">اسم الصنف / البيان</th>
+            <th style="width: 20%;">الوحدة</th>
+            <th style="width: 20%;">الكمية</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in uploaded_data.data %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td style="text-align: right; padding-right: 10px;"><span class="editable" contenteditable="true" style="width: 100%;">{{ row.name }}</span></td>
+            <td><span class="editable" contenteditable="true">{{ row.unit }}</span></td>
+            <td><span class="editable" contenteditable="true">{{ row.qty }}</span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <div class="signatures">
+        <div class="sig-box"><p>إعداد / طالب المواد</p><div class="sig-line"></div></div>
+        <div class="sig-box"><p>أمين المستودع</p><div class="sig-line"></div></div>
+        <div class="sig-box"><p>الاعتماد / الإدارة</p><div class="sig-line"></div></div>
+      </div>
+
+    {% elif form_type == 'purchase' %}
       <!-- نموذج طلب شراء مواد -->
       <div class="header-title">
         <h2>طلب شراء مواد (Material Requisition Form)</h2>
