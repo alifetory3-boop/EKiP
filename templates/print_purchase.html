@@ -38,6 +38,17 @@
     th, td { border: 1px solid #000; padding: 6px 8px; text-align: center; font-size: 14px; height: auto; }
     th { background: rgba(224, 224, 224, 0.95); font-weight: bold; }
 
+    /* حقول قابلة للتعديل إلكترونياً على الشاشة وتصبح مخفية الحدود عند الطباعة */
+    .editable {
+      border: 1px dashed #3498db;
+      background: rgba(52, 152, 219, 0.05);
+      padding: 2px 5px;
+      border-radius: 4px;
+      outline: none;
+      display: inline-block;
+      min-width: 30px;
+    }
+
     /* التوقيعات */
     .signatures { 
       display: flex; justify-content: space-between; 
@@ -48,14 +59,17 @@
       right: 30px;
     }
     .sig-box { width: 30%; }
-    
     .sig-line { border-bottom: 1px solid #000; margin-top: 20px; } 
 
-    @media print { .no-print { display: none; } }
+    @media print { 
+      .no-print { display: none; } 
+      .editable { border: none !important; background: transparent !important; padding: 0 !important; }
+    }
   </style>
 </head>
 <body>
-  <div class="no-print" style="text-align: center; margin-bottom: 10px; padding-top: 10px;">
+  <div class="no-print" style="text-align: center; margin-bottom: 10px; padding-top: 10px; background: #0f2027; padding-bottom: 10px;">
+    <span style="color: #fff; margin-left: 15px; font-family: 'Cairo'; font-weight: bold;">💡 يمكنك النعديل على أي خانة مباشرة بالنقر عليها قبل الطباعة:</span>
     <button onclick="window.print()" style="padding: 10px 25px; background: #27ae60; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-family: 'Cairo', sans-serif; font-weight: bold;">🖨️ طباعة / حفظ PDF</button>
   </div>
 
@@ -66,10 +80,10 @@
     </div>
 
     <div class="details">
-      <div>التاريخ: {{ voucher.voucher_date }}</div>
-      <div>رقم طلب الشراء (RFP): <span style="color: #1e3a8a;">{{ voucher.voucher_no }}</span></div>
-      <div>المورد / الجهة: {{ voucher.supplier }}</div>
-      <div>اسم المستلم: {{ voucher.receiver_name or '-' }}</div>
+      <div>التاريخ: <span class="editable" contenteditable="true">{{ voucher.voucher_date }}</span></div>
+      <div>رقم طلب الشراء (RFP): <span style="color: #1e3a8a;" class="editable" contenteditable="true">{{ voucher.voucher_no }}</span></div>
+      <div>المورد / الجهة: <span class="editable" contenteditable="true">{{ voucher.supplier }}</span></div>
+      <div>اسم المستلم: <span class="editable" contenteditable="true">{{ voucher.receiver_name or '-' }}</span></div>
     </div>
 
     <table>
@@ -86,10 +100,10 @@
         {% for line in lines %}
         <tr>
           <td>{{ loop.index }}</td>
-          <td style="text-align: right; padding-right: 10px;">{{ line.name }}</td>
-          <td>{{ line.unit }}</td>
-          <td>{{ line.qty | int }}</td>
-          <td></td>
+          <td style="text-align: right; padding-right: 10px;"><span class="editable" contenteditable="true" style="width: 100%;">{{ line.name }}</span></td>
+          <td><span class="editable" contenteditable="true">{{ line.unit }}</span></td>
+          <td><span class="editable" contenteditable="true">{{ line.qty | int }}</span></td>
+          <td><span class="editable" contenteditable="true" style="width: 100%;"></span></td>
         </tr>
         {% endfor %}
       </tbody>
