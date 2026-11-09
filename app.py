@@ -1,12 +1,24 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 from database import get_db, init_db
 from functools import wraps
 from datetime import date, datetime
+import os
 import random
 
 app = Flask(__name__)
 app.secret_key = "secret-key-123"
+
+UPLOAD_FOLDER = 'uploads'
+ALLOWED_EXTENSIONS = {'docx', 'xlsx'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.context_processor
 def inject_now():
@@ -518,6 +530,35 @@ def print_dynamic_form():
     items_list = conn.execute("SELECT * FROM items ORDER BY name").fetchall()
     conn.close()
     return render_template('print_dynamic.html', form_type=form_type, items=items_list, today=date.today().isoformat())
+
+# مسار رفع ومعالجة ملفات Word و Excel واستيرادها
+@app.route('/upload_document', methods=['POST'])
+@login_required(roles=['storekeeper'])
+def upload_document():
+    if 'file' not in request.files:
+        flash('لم يتم اختيار أي ملف', 'danger')
+        return redirect(url_for('purchase'))
+    file = request.files['file']
+    if file.filename == '':
+        flash('اسم الملف فارغ', 'danger')
+        return redirect(url_for('purchase'))
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        file_ext = filename.rsplit('.', 1)[1].lower()
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+        
+        conn = get_db()
+        conn.execute("INSERT INTO uploaded_documents (filename, original_name, file_type, uploaded_by) VALUES (?, ?, ?, ?)",
+                     (filename, file.filename, file_ext, session['user_id']))
+        conn.commit()
+        conn.close()
+        
+        log_activity("رفع مستند", f"تم رفع الملف: {file.filename}")
+        flash(f'تم رفع واستيراد الملف ({file.filename}) بنجاح!', 'success')
+    else:
+        flash('صيغة الملف غير مقبولة. يرجى رفع ملفات Word (.docx) أو Excel (.xlsx) فقط', 'danger')
+    return redirect(url_for('purchase'))
 
 @app.route('/transfer_purchase_to_issue/<int:voucher_id>')
 @login_required(roles=['storekeeper'])
