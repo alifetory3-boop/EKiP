@@ -6,6 +6,8 @@ from functools import wraps
 from datetime import date, datetime
 import os
 import random
+import pandas as pd
+from docx import Document
 
 app = Flask(__name__)
 app.secret_key = "secret-key-123"
@@ -521,7 +523,6 @@ def print_purchase(voucher_id):
     conn.close()
     return render_template('print_purchase.html', voucher=voucher, lines=lines)
 
-# مسار ديناميكي جديد لطباعة وتعديل النماذج حسب الاختيار
 @app.route('/print_dynamic_form', methods=['GET'])
 @login_required(roles=['storekeeper'])
 def print_dynamic_form():
@@ -529,9 +530,13 @@ def print_dynamic_form():
     conn = get_db()
     items_list = conn.execute("SELECT * FROM items ORDER BY name").fetchall()
     conn.close()
-    return render_template('print_dynamic.html', form_type=form_type, items=items_list, today=date.today().isoformat())
+    
+    uploaded_data = None
+    if form_type == 'uploaded':
+        uploaded_data = session.get('uploaded_form_data', None)
+        
+    return render_template('print_dynamic.html', form_type=form_type, items=items_list, today=date.today().isoformat(), uploaded_data=uploaded_data)
 
-# مسار رفع ومعالجة ملفات Word و Excel واستيرادها
 @app.route('/upload_document', methods=['POST'])
 @login_required(roles=['storekeeper'])
 def upload_document():
@@ -548,14 +553,59 @@ def upload_document():
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
         
+        extracted_data = []
+        
+        if file_ext == 'xlsx':
+            try:
+                df = pd.read_excel(filepath)
+                for index, row in df.iterrows():
+                    extracted_data.append({
+                        'name': str(row.iloc[0]) if len(row) > 0 else '',
+                        'unit': str(row.iloc[1]) if len(row) > 1 else 'حبة',
+                        'qty': str(row.iloc[2]) if len(row) > 2 else '1'
+                    })
+            except Exception as e:
+                flash(f'خطأ في قراءة ملف الأكسيل: {e}', 'danger')
+                return redirect(url_for('purchase'))
+                
+        elif file_ext == 'docx':
+            try:
+                doc = Document(filepath)
+                for table in doc.tables:
+                    for row in table.rows:
+                        row_cells = [cell.text.strip() for cell in row.cells]
+                        if len(row_cells) >= 1:
+                            extracted_data.append({
+                                'name': row_cells[0],
+                                'unit': row_cells[1] if len(row_cells) > 1 else 'حبة',
+                                'qty': row_cells[2] if len(row_cells) > 2 else '1'
+                            })
+                if not extracted_data:
+                    for para in doc.paragraphs:
+                        if para.text.strip():
+                            extracted_data.append({
+                                'name': para.text.strip(),
+                                'unit': 'حبة',
+                                'qty': '1'
+                            })
+            except Exception as e:
+                flash(f'خطأ في قراءة ملف الوورد: {e}', 'danger')
+                return redirect(url_for('purchase'))
+
+        session['uploaded_form_data'] = {
+            'filename': file.filename,
+            'data': extracted_data
+        }
+        
         conn = get_db()
         conn.execute("INSERT INTO uploaded_documents (filename, original_name, file_type, uploaded_by) VALUES (?, ?, ?, ?)",
                      (filename, file.filename, file_ext, session['user_id']))
         conn.commit()
         conn.close()
         
-        log_activity("رفع مستند", f"تم رفع الملف: {file.filename}")
-        flash(f'تم رفع واستيراد الملف ({file.filename}) بنجاح!', 'success')
+        log_activity("رفع مستند واستيراد", f"تم رفع الملف واستخراج محتواه: {file.filename}")
+        flash(f'تم رفع واستيراد وعرض محتوى الملف ({file.filename}) بنجاح!', 'success')
+        return redirect(url_for('print_dynamic_form', type='uploaded'))
     else:
         flash('صيغة الملف غير مقبولة. يرجى رفع ملفات Word (.docx) أو Excel (.xlsx) فقط', 'danger')
     return redirect(url_for('purchase'))
