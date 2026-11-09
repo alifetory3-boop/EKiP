@@ -14,7 +14,7 @@
         header a { color: #4facfe; text-decoration: none; font-weight: bold; font-size: 14px; margin-left: 15px; }
         
         .container-box { max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
-        .form-box, .table-box { background: rgba(15, 32, 39, 0.85); backdrop-filter: blur(15px); padding: 25px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); width: 100%; }
+        .form-box, .table-box, .upload-box { background: rgba(15, 32, 39, 0.85); backdrop-filter: blur(15px); padding: 25px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); width: 100%; }
         
         h3 { color: #4facfe; margin-bottom: 20px; font-weight: 800; border-bottom: 2px solid #4facfe; padding-bottom: 10px; font-size: 18px; text-align: center; }
         
@@ -59,6 +59,19 @@
   {% endwith %}
 
   <div class="container-box">
+    
+    <!-- قسم رفع واستيراد ملفات Word و Excel -->
+    <div class="upload-box">
+      <h3 style="font-size: 16px; margin-bottom: 15px;"><i class="fa-solid fa-file-arrow-up"></i> رفع واستيراد ملفات النماذج (Word / Excel)</h3>
+      <form action="{{ url_for('upload_document') }}" method="POST" enctype="multipart/form-data" class="d-flex gap-3 align-items-center flex-wrap">
+        <div style="flex: 1; min-width: 250px;">
+          <input type="file" name="file" accept=".docx, .xlsx" class="form-control" required style="background: #fff; padding: 8px;">
+        </div>
+        <button type="submit" class="btn btn-info text-dark fw-bold" style="padding: 9px 20px;"><i class="fa-solid fa-upload"></i> رفع واستيراد الملف</button>
+      </form>
+      <small class="text-light mt-2 d-block" style="opacity: 0.8;">* الصيغ المقبولة: ملفات الوورد (.docx) أو الأكسيل (.xlsx)</small>
+    </div>
+
     <div class="form-box">
       <h3>إصدار طلب شراء جديد (تنسيق شركة أكيب)</h3>
       <form method="post">
